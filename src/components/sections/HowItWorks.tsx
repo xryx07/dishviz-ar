@@ -1,26 +1,20 @@
 import { motion } from "framer-motion";
-import { Upload, Sparkles, QrCode, Smartphone } from "lucide-react";
 
 const steps = [
   {
-    icon: Upload,
-    title: "Upload Menu / Photos",
-    description: "Send us your dish images, details, and pricing. We handle the rest.",
+    number: "Step 1",
+    title: "Take Photos",
+    description: "Just take clear, high-quality photos of the dishes you want to show off.",
   },
   {
-    icon: Sparkles,
-    title: "We Create AR Dishes",
-    description: "Our team converts your dishes into stunning 3D/AR models.",
+    number: "Step 2",
+    title: "We Build the 3D Model",
+    description: "Our team turns your photos into realistic 3D models and hosts them on our fast servers.",
   },
   {
-    icon: QrCode,
-    title: "Place QR Codes on Tables",
-    description: "We provide QR codes or links for each dish or your full menu.",
-  },
-  {
-    icon: Smartphone,
-    title: "Guests Scan & View in AR",
-    description: "Customers scan with their phone → see dish in AR → order confidently.",
+    number: "Step 3",
+    title: "Guests View and Order",
+    description: "Guests scan a QR code at their table, see the 3D dish, and place their order easily.",
   },
 ];
 
@@ -35,15 +29,18 @@ export const HowItWorks = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
-            How It Works
+          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+            THE STEPS
+          </p>
+          <h2 className="text-4xl sm:text-5xl font-playfair font-bold text-foreground mb-4">
+            It's Easy to Get Started.
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Four simple steps to transform your restaurant's menu experience
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            We do all the hard work creating the 3D models; you just focus on your customers.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
             <motion.div
               key={index}
@@ -51,33 +48,20 @@ export const HowItWorks = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative"
+              className="bg-card rounded-2xl p-8 shadow-card hover:shadow-soft transition-smooth"
             >
-              <div className="bg-card rounded-2xl p-8 shadow-soft hover:shadow-glow transition-smooth h-full">
-                <div className="w-16 h-16 hero-gradient rounded-xl flex items-center justify-center mb-6">
-                  <step.icon className="h-8 w-8 text-primary-foreground" />
-                </div>
-                <div className="absolute top-4 right-4 text-5xl font-bold text-muted/20">
-                  {index + 1}
-                </div>
-                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-foreground mb-4">{step.number}</p>
+                <h3 className="text-2xl font-playfair font-bold text-foreground mb-4">
+                  {step.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {step.description}
+                </p>
               </div>
             </motion.div>
           ))}
         </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="text-center mt-12"
-        >
-          <p className="text-muted-foreground bg-card px-6 py-3 rounded-full inline-block shadow-soft">
-            ✨ No app required — works in the browser on most modern smartphones
-          </p>
-        </motion.div>
       </div>
     </section>
   );
