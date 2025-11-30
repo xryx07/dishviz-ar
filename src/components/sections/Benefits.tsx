@@ -20,19 +20,19 @@ const benefits = [
 
 export const Benefits = () => {
   return (
-    <section id="benefits" className="py-24 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="benefits" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-4xl sm:text-5xl font-playfair font-bold text-foreground mb-6">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-playfair font-bold text-foreground mb-4">
             Key Benefits for You
           </h2>
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
             Our solution fixes small issues that slow down the guest experience and hurt your business profits.
           </p>
         </motion.div>
