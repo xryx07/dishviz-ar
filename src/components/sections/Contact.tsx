@@ -43,9 +43,21 @@ export const Contact = () => {
   };
 
   return (
-    <section id="contact" className="py-24 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="contact" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8 sm:mb-12 lg:mb-16"
+        >
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-playfair font-bold text-foreground">
+            Contact Us
+          </h2>
+        </motion.div>
+        
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-start">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -144,18 +156,50 @@ export const Contact = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:pt-12 space-y-8"
+            className="lg:pt-12 space-y-6 sm:space-y-8"
           >
             <div>
-              <p className="text-lg text-muted-foreground leading-relaxed">
+              <h3 className="text-xl sm:text-2xl font-playfair font-bold text-foreground mb-4 sm:mb-6">
+                Get in Touch
+              </h3>
+              <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
                 Need answers right now? Our team is ready to help with your questions about using the technology.
               </p>
             </div>
 
-            <div>
-              <p className="text-muted-foreground">
-                We usually reply in under 4 business hours.
-              </p>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="border-t border-border pt-4 sm:pt-6">
+                <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Email</h4>
+                <a 
+                  href="mailto:contact@dishviz.com" 
+                  className="text-base sm:text-lg text-primary hover:underline"
+                >
+                  contact@dishviz.com
+                </a>
+              </div>
+
+              <div className="border-t border-border pt-4 sm:pt-6">
+                <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Phone</h4>
+                <a 
+                  href="tel:+919876543210" 
+                  className="text-base sm:text-lg text-primary hover:underline"
+                >
+                  +91 98765 43210
+                </a>
+              </div>
+
+              <div className="border-t border-border pt-4 sm:pt-6">
+                <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Location</h4>
+                <p className="text-base sm:text-lg text-muted-foreground">
+                  India
+                </p>
+              </div>
+
+              <div className="border-t border-border pt-4 sm:pt-6">
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  We usually reply in under 4 business hours.
+                </p>
+              </div>
             </div>
           </motion.div>
         </div>
