@@ -43,14 +43,14 @@ export const Contact = () => {
   };
 
   return (
-    <section id="contact" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-background">
+    <section id="contact" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8 sm:mb-12 lg:mb-16"
+          className="text-center mb-8 sm:mb-10"
         >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-playfair font-bold text-foreground">
             Contact Us
@@ -192,12 +192,6 @@ export const Contact = () => {
                 <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Location</h4>
                 <p className="text-base sm:text-lg text-muted-foreground">
                   India
-                </p>
-              </div>
-
-              <div className="border-t border-border pt-4 sm:pt-6">
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  We usually reply in under 4 business hours.
                 </p>
               </div>
             </div>
