@@ -29,7 +29,7 @@ export const About = () => {
                 AJ
               </div>
               <h3 className="text-xl sm:text-2xl font-playfair font-bold text-foreground mb-2">Arya Jain</h3>
-              <p className="text-primary font-medium mb-3 sm:mb-4 text-sm sm:text-base">Founder & AR Developer</p>
+              <p className="text-primary font-medium mb-3 sm:mb-4 text-sm sm:text-base">Founder & CEO</p>
             </div>
 
             <div className="space-y-4 text-center">

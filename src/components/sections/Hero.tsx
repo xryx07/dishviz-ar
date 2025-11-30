@@ -13,6 +13,7 @@ export const Hero = () => {
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
+            className="order-2 lg:order-1"
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-playfair font-bold text-foreground leading-tight">
               Amazing Visual Menus. Made Simple
@@ -23,10 +24,10 @@ export const Hero = () => {
             initial={{ opacity: 0, x: 30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
+            className="relative order-1 lg:order-2"
           >
             <div className="relative mx-auto w-full h-[300px] sm:h-[400px] lg:h-[500px] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-background shadow-soft">
-              <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+              <Canvas camera={{ position: [0, 0, 6], fov: 50 }}>
                 <Suspense fallback={null}>
                   <DishModel3D />
                   <OrbitControls 
