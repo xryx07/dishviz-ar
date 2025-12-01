@@ -3,12 +3,24 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { Suspense } from "react";
 import { DishModel3D } from "./DishModel3D";
+import { PastaModel3D } from "./PastaModel3D";
+import { DessertModel3D } from "./DessertModel3D";
 
 interface ARPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   dishName: string;
 }
+
+const getDishModel = (dishName: string) => {
+  if (dishName.toLowerCase().includes('pasta')) {
+    return <PastaModel3D />;
+  }
+  if (dishName.toLowerCase().includes('dessert') || dishName.toLowerCase().includes('chocolate')) {
+    return <DessertModel3D />;
+  }
+  return <DishModel3D />;
+};
 
 export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProps) => {
   return (
@@ -20,7 +32,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
         <div className="w-full h-full rounded-2xl overflow-hidden bg-gradient-to-br from-secondary to-background">
           <Canvas camera={{ position: [0, 0, 6], fov: 50 }}>
             <Suspense fallback={null}>
-              <DishModel3D />
+              {getDishModel(dishName)}
               <OrbitControls 
                 enableZoom={true}
                 autoRotate={true}
