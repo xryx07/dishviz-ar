@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,7 +17,6 @@ interface ContactEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -28,34 +26,42 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Received contact form submission:", { name, restaurant, email, phone });
 
-    // Validate required fields
     if (!name || !email || !message) {
       return new Response(
         JSON.stringify({ error: "Name, email, and message are required" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Send notification email to business
-    const emailResponse = await resend.emails.send({
-      from: "DishViz AR <onboarding@resend.dev>",
-      to: ["dishviz.ar@gmail.com"],
-      subject: `New Contact Form Submission from ${name}`,
-      html: `
-        <h1>New Contact Form Submission</h1>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Restaurant:</strong> ${restaurant || "Not provided"}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone || "Not provided"}</p>
-        <h2>Message:</h2>
-        <p>${message}</p>
-      `,
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "DishViz AR <onboarding@resend.dev>",
+        to: ["dishviz.ar@gmail.com"],
+        subject: `New Contact Form Submission from ${name}`,
+        html: `
+          <h1>New Contact Form Submission</h1>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Restaurant:</strong> ${restaurant || "Not provided"}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Phone:</strong> ${phone || "Not provided"}</p>
+          <h2>Message:</h2>
+          <p>${message}</p>
+        `,
+      }),
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    if (!res.ok) {
+      const errorData = await res.text();
+      console.error("Resend API error:", errorData);
+      throw new Error(`Failed to send email: ${errorData}`);
+    }
+
+    console.log("Email sent successfully");
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -65,10 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.error("Error in send-contact-email function:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   }
 };
