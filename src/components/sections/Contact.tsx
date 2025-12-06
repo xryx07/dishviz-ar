@@ -193,21 +193,18 @@ export const Contact = () => {
               <div className="border-t border-border pt-4 sm:pt-6">
                 <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Email</h4>
                 <a 
-                  href="mailto:contact@dishviz.com" 
+                  href="mailto:dishviz.ar@gmail.com" 
                   className="text-base sm:text-lg text-primary hover:underline"
                 >
-                  contact@dishviz.com
+                  dishviz.ar@gmail.com
                 </a>
               </div>
 
               <div className="border-t border-border pt-4 sm:pt-6">
                 <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Phone</h4>
-                <a 
-                  href="tel:+919876543210" 
-                  className="text-base sm:text-lg text-primary hover:underline"
-                >
-                  +91 98765 43210
-                </a>
+                <p className="text-base sm:text-lg text-muted-foreground">
+                  +91 98765 xxxxx
+                </p>
               </div>
 
               <div className="border-t border-border pt-4 sm:pt-6">
