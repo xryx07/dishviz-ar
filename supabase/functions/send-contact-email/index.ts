@@ -33,7 +33,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const res = await fetch("https://api.resend.com/emails", {
+    // Send email to business owner
+    const businessEmailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -55,13 +56,58 @@ const handler = async (req: Request): Promise<Response> => {
       }),
     });
 
-    if (!res.ok) {
-      const errorData = await res.text();
-      console.error("Resend API error:", errorData);
-      throw new Error(`Failed to send email: ${errorData}`);
+    if (!businessEmailRes.ok) {
+      const errorData = await businessEmailRes.text();
+      console.error("Resend API error (business email):", errorData);
+      throw new Error(`Failed to send business email: ${errorData}`);
     }
 
-    console.log("Email sent successfully");
+    console.log("Business email sent successfully");
+
+    // Send confirmation email to the user who submitted the form
+    const confirmationEmailRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "DishViz AR <onboarding@resend.dev>",
+        to: [email],
+        subject: "Thank you for contacting DishViz AR!",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #F97316;">Thank You, ${name}!</h1>
+            <p>We have received your message and will get back to you as soon as possible.</p>
+            <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin-top: 0;">Your Message:</h3>
+              <p>${message}</p>
+            </div>
+            <p>If you have any urgent questions, feel free to reach us at:</p>
+            <ul>
+              <li>Email: dishviz.ar@gmail.com</li>
+              <li>Phone: +91 93012 63SEO5</li>
+            </ul>
+            <p style="color: #666; font-size: 12px; margin-top: 30px;">
+              This is an automated confirmation email. Please do not reply directly to this email.
+            </p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="color: #999; font-size: 12px;">
+              © DishViz AR - Transform Your Restaurant Menu with AR
+            </p>
+          </div>
+        `,
+      }),
+    });
+
+    if (!confirmationEmailRes.ok) {
+      const errorData = await confirmationEmailRes.text();
+      console.error("Resend API error (confirmation email):", errorData);
+      // Don't throw here - business email was sent, just log the error
+      console.log("Confirmation email failed but business email was sent");
+    } else {
+      console.log("Confirmation email sent successfully to:", email);
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
