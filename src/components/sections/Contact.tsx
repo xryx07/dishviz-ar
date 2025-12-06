@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Linkedin, Instagram, Twitter } from "lucide-react";
 
 export const Contact = () => {
   const { toast } = useToast();
@@ -212,6 +213,39 @@ export const Contact = () => {
                 <p className="text-base sm:text-lg text-muted-foreground">
                   India
                 </p>
+              </div>
+
+              <div className="border-t border-border pt-4 sm:pt-6">
+                <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Follow Us</h4>
+                <div className="flex gap-4">
+                  <a 
+                    href="https://www.linkedin.com/in/dish-viz-59957639b" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin size={20} />
+                  </a>
+                  <a 
+                    href="https://www.instagram.com/dishviz.ar" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                    aria-label="Instagram"
+                  >
+                    <Instagram size={20} />
+                  </a>
+                  <a 
+                    href="https://x.com/dishviz_ar" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                    aria-label="X (Twitter)"
+                  >
+                    <Twitter size={20} />
+                  </a>
+                </div>
               </div>
             </div>
           </motion.div>
