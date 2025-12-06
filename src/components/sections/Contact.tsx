@@ -148,14 +148,15 @@ export const Contact = () => {
               </div>
 
               <div>
-                <Label htmlFor="message" className="text-destructive">
-                  Message (e.g., How many locations?)
+                <Label htmlFor="message" className="text-foreground">
+                  Message (e.g., How many locations?) <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
+                  required
                   rows={5}
                   className="mt-2 bg-background border-input"
                 />
