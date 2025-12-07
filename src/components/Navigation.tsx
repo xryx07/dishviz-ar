@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
-
+import { Menu, X, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -70,16 +70,35 @@ export const Navigation = () => {
                 {link.label}
               </button>
             ))}
+            <Button
+              onClick={() => scrollToSection('contact')}
+              variant="secondary"
+              className="font-medium"
+            >
+              <Sparkles size={16} className="mr-2" />
+              Request Demo
+            </Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-primary-foreground hover:text-primary-foreground/80 transition-smooth"
-            aria-label="Toggle menu"
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile CTA + Menu Button */}
+          <div className="flex md:hidden items-center gap-2">
+            <Button
+              onClick={() => scrollToSection('contact')}
+              size="sm"
+              variant="secondary"
+              className="font-medium text-xs px-3"
+            >
+              <Sparkles size={14} className="mr-1" />
+              Demo
+            </Button>
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 text-primary-foreground hover:text-primary-foreground/80 transition-smooth"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
