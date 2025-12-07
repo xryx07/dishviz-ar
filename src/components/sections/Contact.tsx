@@ -216,34 +216,34 @@ export const Contact = () => {
               </div>
 
               <div className="border-t border-border pt-4 sm:pt-6">
-                <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-wide">Follow Us</h4>
-                <div className="flex gap-4">
+                <h4 className="text-sm font-semibold text-foreground mb-2 sm:mb-3 uppercase tracking-wide text-center sm:text-left">Follow Us</h4>
+                <div className="flex justify-center sm:justify-start gap-3 sm:gap-4">
                   <a 
                     href="https://www.linkedin.com/in/dish-viz-59957639b" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                    className="p-2.5 sm:p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
                     aria-label="LinkedIn"
                   >
-                    <Linkedin size={20} />
+                    <Linkedin size={22} className="sm:w-5 sm:h-5" />
                   </a>
                   <a 
                     href="https://www.instagram.com/dishviz.ar" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                    className="p-2.5 sm:p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
                     aria-label="Instagram"
                   >
-                    <Instagram size={20} />
+                    <Instagram size={22} className="sm:w-5 sm:h-5" />
                   </a>
                   <a 
                     href="https://x.com/dishviz_ar" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+                    className="p-2.5 sm:p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
                     aria-label="X (Twitter)"
                   >
-                    <Twitter size={20} />
+                    <Twitter size={22} className="sm:w-5 sm:h-5" />
                   </a>
                 </div>
               </div>
