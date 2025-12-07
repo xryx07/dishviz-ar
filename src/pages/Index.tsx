@@ -8,6 +8,7 @@ import { AboutCompany } from "@/components/sections/AboutCompany";
 import { About } from "@/components/sections/About";
 import { Contact } from "@/components/sections/Contact";
 import { Footer } from "@/components/Footer";
+import { FloatingContactButton } from "@/components/FloatingContactButton";
 
 const Index = () => {
   return (
@@ -24,6 +25,7 @@ const Index = () => {
         <Contact />
       </main>
       <Footer />
+      <FloatingContactButton />
     </div>
   );
 };
