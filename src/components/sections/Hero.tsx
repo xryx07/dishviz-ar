@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { Suspense } from "react";
-import { DishModel3D } from "../DishModel3D";
+import { PastaGLBModel } from "../PastaGLBModel";
 
 export const Hero = () => {
   return (
@@ -27,9 +27,9 @@ export const Hero = () => {
             className="relative order-1 lg:order-2"
           >
             <div className="relative mx-auto w-full h-[300px] sm:h-[400px] lg:h-[500px] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-background shadow-soft">
-              <Canvas camera={{ position: [0, 0, 6], fov: 50 }}>
+              <Canvas camera={{ position: [0, 0, 4], fov: 50 }}>
                 <Suspense fallback={null}>
-                  <DishModel3D />
+                  <PastaGLBModel />
                   <OrbitControls 
                     enableZoom={false} 
                     autoRotate={false}

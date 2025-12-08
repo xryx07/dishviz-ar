@@ -124,6 +124,18 @@ export const AIChatButton = () => {
     }
   };
 
+  const quickReplies = [
+    "What is DishViz?",
+    "How does AR menu work?",
+    "Pricing plans?",
+    "Contact support",
+  ];
+
+  const handleQuickReply = (question: string) => {
+    setInput(question);
+    setTimeout(() => sendMessage(), 100);
+  };
+
   return (
     <>
       {/* Chat Button */}
@@ -164,6 +176,17 @@ export const AIChatButton = () => {
             <div className="text-center text-muted-foreground text-sm py-8">
               <Bot size={40} className="mx-auto mb-3 opacity-50" />
               <p>Hi! How can I help you today?</p>
+              <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                {quickReplies.map((reply, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleQuickReply(reply)}
+                    className="text-xs bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-1.5 rounded-full transition-colors"
+                  >
+                    {reply}
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
