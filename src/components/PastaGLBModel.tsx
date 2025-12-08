@@ -34,37 +34,43 @@ export const PastaGLBModel = () => {
 
   return (
     <group ref={groupRef}>
-      {/* Darker ambient for moody atmosphere */}
-      <ambientLight intensity={0.15} />
+      {/* Bright ambient light */}
+      <ambientLight intensity={1.2} />
       
-      {/* Main directional light with shadows */}
+      {/* Main directional light - bright */}
       <directionalLight 
         position={[3, 5, 3]} 
-        intensity={0.4} 
+        intensity={2} 
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
       />
       
-      {/* Subtle warm accent light */}
-      <pointLight position={[-3, 2, -3]} intensity={0.15} color="#ff9966" />
+      {/* Front fill light */}
+      <directionalLight position={[0, 3, 5]} intensity={1.5} />
+      
+      {/* Warm accent light */}
+      <pointLight position={[-3, 2, -3]} intensity={1} color="#ff9966" />
+      
+      {/* Top light */}
+      <pointLight position={[0, 5, 0]} intensity={1.5} color="#ffffff" />
       
       {/* Animated spotlight to highlight the dish */}
       <spotLight
         ref={spotlightRef}
         position={[0, 6, 2]}
-        angle={0.5}
-        penumbra={0.9}
-        intensity={1}
-        color="#fff5e6"
+        angle={0.6}
+        penumbra={0.5}
+        intensity={3}
+        color="#ffffff"
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
         target-position={[0, -0.5, 0]}
       />
       
-      {/* Rim light for depth */}
-      <pointLight position={[0, -2, -3]} intensity={0.1} color="#4a90d9" />
+      {/* Rim/back light for depth */}
+      <pointLight position={[0, 2, -4]} intensity={1} color="#ffffff" />
       
       {/* Glow effect ring around the dish */}
       <mesh ref={glowRef} position={[0, -0.4, 0]} rotation={[-Math.PI / 2, 0, 0]}>
