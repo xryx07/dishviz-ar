@@ -16,10 +16,37 @@ export const PastaGLBModel = () => {
 
   return (
     <group ref={groupRef}>
-      <ambientLight intensity={0.3} />
-      <directionalLight position={[5, 5, 5]} intensity={0.6} />
-      <pointLight position={[-5, 3, -5]} intensity={0.3} color="#ff9966" />
-      <primitive object={scene} scale={2} position={[0, -0.5, 0]} />
+      {/* Darker ambient for moody atmosphere */}
+      <ambientLight intensity={0.15} />
+      
+      {/* Main directional light with shadows */}
+      <directionalLight 
+        position={[3, 5, 3]} 
+        intensity={0.4} 
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      
+      {/* Subtle warm accent light */}
+      <pointLight position={[-3, 2, -3]} intensity={0.15} color="#ff9966" />
+      
+      {/* Spotlight to highlight the dish */}
+      <spotLight
+        position={[0, 6, 2]}
+        angle={0.4}
+        penumbra={0.8}
+        intensity={0.8}
+        color="#fffaf0"
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+      />
+      
+      {/* Rim light for depth */}
+      <pointLight position={[0, -2, -3]} intensity={0.1} color="#4a90d9" />
+      
+      <primitive object={scene} scale={2} position={[0, -0.5, 0]} castShadow receiveShadow />
     </group>
   );
 };
