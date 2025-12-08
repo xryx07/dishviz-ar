@@ -16,9 +16,9 @@ export const PastaGLBModel = () => {
 
   return (
     <group ref={groupRef}>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
-      <pointLight position={[-5, 3, -5]} intensity={0.5} color="#ff9966" />
+      <ambientLight intensity={0.3} />
+      <directionalLight position={[5, 5, 5]} intensity={0.6} />
+      <pointLight position={[-5, 3, -5]} intensity={0.3} color="#ff9966" />
       <primitive object={scene} scale={2} position={[0, -0.5, 0]} />
     </group>
   );
