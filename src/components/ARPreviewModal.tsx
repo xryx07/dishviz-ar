@@ -1,6 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
-import "@google/model-viewer";
 
 interface ARPreviewModalProps {
   isOpen: boolean;
