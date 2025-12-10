@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, Box } from "lucide-react";
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
@@ -28,11 +28,17 @@ const dishes = [
 export const Demo = () => {
   const [selectedDish, setSelectedDish] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadedModels, setLoadedModels] = useState<Set<number>>(new Set());
 
   const handleARClick = (e: React.MouseEvent, dishName: string) => {
     e.stopPropagation();
     setSelectedDish(dishName);
     setIsModalOpen(true);
+  };
+
+  const handleLoad3D = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    setLoadedModels(prev => new Set([...prev, index]));
   };
 
   return (
@@ -63,17 +69,23 @@ export const Demo = () => {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="group"
             >
-              <div className="relative rounded-2xl overflow-hidden shadow-card hover:shadow-soft transition-smooth">
+              {/* Image Card */}
+              <div className="relative rounded-2xl overflow-hidden shadow-card hover:shadow-soft transition-smooth bg-background">
                 <img
                   src={dish.image}
                   alt={dish.name}
                   loading="lazy"
-                  className="w-full aspect-square object-cover group-hover:scale-105 transition-smooth"
+                  className="w-full aspect-square object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-smooth" />
-                
-                {/* 3D Model Preview (inline) */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] h-32 rounded-xl overflow-hidden bg-background/90 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transition-smooth transform translate-y-4 group-hover:translate-y-0">
+              </div>
+
+              {/* 3D Model Viewer - Only loads when user clicks */}
+              {loadedModels.has(index) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 200 }}
+                  className="mt-3 rounded-2xl overflow-hidden bg-gradient-to-br from-secondary to-background shadow-card"
+                >
                   <model-viewer
                     src={dish.model}
                     alt={`3D model of ${dish.name}`}
@@ -83,21 +95,35 @@ export const Demo = () => {
                     exposure="1"
                     loading="lazy"
                     reveal="auto"
-                    style={{ width: '100%', height: '100%' }}
+                    style={{ width: '100%', height: '200px' }}
                   />
-                </div>
-              </div>
+                </motion.div>
+              )}
               
-              <div className="mt-4 text-center space-y-2">
+              <div className="mt-4 text-center space-y-3">
                 <p className="text-foreground font-medium text-lg">{dish.name}</p>
-                <Button 
-                  onClick={(e) => handleARClick(e, dish.name)}
-                  className="gap-2"
-                  size="sm"
-                >
-                  <Eye className="w-4 h-4" />
-                  View in AR
-                </Button>
+                
+                <div className="flex gap-2 justify-center">
+                  {!loadedModels.has(index) && (
+                    <Button 
+                      onClick={(e) => handleLoad3D(e, index)}
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Box className="w-4 h-4" />
+                      View 3D
+                    </Button>
+                  )}
+                  <Button 
+                    onClick={(e) => handleARClick(e, dish.name)}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Eye className="w-4 h-4" />
+                    View in AR
+                  </Button>
+                </div>
               </div>
             </motion.div>
           ))}
