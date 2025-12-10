@@ -6,6 +6,7 @@ import { Eye, Box, Loader2 } from "lucide-react";
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
+import noodlesImage from "@/assets/dish-noodles.jpg";
 import { ARPreviewModal } from "@/components/ARPreviewModal";
 
 const dishes = [
@@ -23,6 +24,11 @@ const dishes = [
     name: "Manchurian",
     image: manchurianImage,
     model: "/models/manchurian_dish.glb",
+  },
+  {
+    name: "Chow Mein Noodles",
+    image: noodlesImage,
+    model: "/models/noodles_dish.glb",
   },
 ];
 
@@ -70,7 +76,7 @@ export const Demo = () => {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {dishes.map((dish, index) => (
             <motion.div
               key={index}
