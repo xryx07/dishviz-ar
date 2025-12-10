@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
+import falafelImage from "@/assets/dish-falafel.jpg";
 import { ARPreviewModal } from "@/components/ARPreviewModal";
 
 const dishes = [
@@ -12,6 +13,10 @@ const dishes = [
   {
     name: "Fresh Pasta",
     image: pastaImage,
+  },
+  {
+    name: "Falafel Plate",
+    image: falafelImage,
   },
 ];
 
@@ -42,7 +47,7 @@ export const Demo = () => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
           {dishes.map((dish, index) => (
             <motion.div
               key={index}
