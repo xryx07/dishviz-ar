@@ -1,13 +1,15 @@
-import { useState } from "react";
-import { Bot, X, Send, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Bot, X, Send, Loader2, Sparkles, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+  timestamp: Date;
 }
 
 export const AIChatButton = () => {
@@ -15,17 +17,39 @@ export const AIChatButton = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const { toast } = useToast();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Focus input when opening
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      setTimeout(() => inputRef.current?.focus(), 300);
+    }
+  }, [isOpen]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    const userMessage: Message = { 
+      role: "user", 
+      content: input.trim(),
+      timestamp: new Date()
+    };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+    setIsTyping(true);
 
     let assistantContent = "";
 
@@ -36,7 +60,7 @@ export const AIChatButton = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
+        body: JSON.stringify({ messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })) }),
       });
 
       if (resp.status === 429) {
@@ -46,6 +70,7 @@ export const AIChatButton = () => {
           variant: "destructive",
         });
         setIsLoading(false);
+        setIsTyping(false);
         return;
       }
 
@@ -56,6 +81,7 @@ export const AIChatButton = () => {
           variant: "destructive",
         });
         setIsLoading(false);
+        setIsTyping(false);
         return;
       }
 
@@ -68,7 +94,8 @@ export const AIChatButton = () => {
       let textBuffer = "";
 
       // Add empty assistant message
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "", timestamp: new Date() }]);
+      setIsTyping(false);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -114,6 +141,7 @@ export const AIChatButton = () => {
       });
     } finally {
       setIsLoading(false);
+      setIsTyping(false);
     }
   };
 
@@ -125,118 +153,217 @@ export const AIChatButton = () => {
   };
 
   const quickReplies = [
-    "What is DishViz?",
-    "How does AR menu work?",
-    "Pricing plans?",
-    "Contact support",
+    { icon: "🍽️", text: "What is DishViz?" },
+    { icon: "📱", text: "How does AR menu work?" },
+    { icon: "💰", text: "What are the pricing plans?" },
+    { icon: "🚀", text: "How to get started?" },
   ];
 
   const handleQuickReply = (question: string) => {
     setInput(question);
-    setTimeout(() => sendMessage(), 100);
+  };
+
+  useEffect(() => {
+    if (input && quickReplies.some(q => q.text === input)) {
+      sendMessage();
+    }
+  }, [input]);
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
     <>
       {/* Chat Button */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 left-6 z-50 rounded-full w-14 h-14 shadow-lg transition-all duration-300 ${
-          isOpen ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"
-        }`}
-        size="icon"
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }}
       >
-        {isOpen ? <X size={24} /> : <Bot size={24} />}
-      </Button>
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`fixed bottom-6 left-6 z-50 rounded-full w-14 h-14 shadow-lg transition-all duration-300 ${
+            isOpen ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"
+          }`}
+          size="icon"
+        >
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.div
+                key="close"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <X size={24} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="open"
+                initial={{ rotate: 90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <MessageSquare size={24} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Button>
+      </motion.div>
 
       {/* Chat Window */}
-      <div
-        className={`fixed bottom-24 left-6 z-50 w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-xl transition-all duration-300 overflow-hidden ${
-          isOpen
-            ? "opacity-100 translate-y-0 scale-100"
-            : "opacity-0 translate-y-4 scale-95 pointer-events-none"
-        }`}
-      >
-        {/* Header */}
-        <div className="bg-primary p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-              <Bot size={20} className="text-primary-foreground" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-primary-foreground">DishViz Assistant</h3>
-              <p className="text-xs text-primary-foreground/70">Ask me anything!</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Messages */}
-        <ScrollArea className="h-72 p-4">
-          {messages.length === 0 ? (
-            <div className="text-center text-muted-foreground text-sm py-8">
-              <Bot size={40} className="mx-auto mb-3 opacity-50" />
-              <p>Hi! How can I help you today?</p>
-              <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                {quickReplies.map((reply, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleQuickReply(reply)}
-                    className="text-xs bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-1.5 rounded-full transition-colors"
-                  >
-                    {reply}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-muted text-foreground rounded-bl-md"
-                    }`}
-                  >
-                    {msg.content || (
-                      <Loader2 size={16} className="animate-spin" />
-                    )}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-24 left-6 z-50 w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary to-primary/80 p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-primary-foreground/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                  <Sparkles size={24} className="text-primary-foreground" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-primary-foreground text-lg">DishViz AI</h3>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    <p className="text-xs text-primary-foreground/80">Always online</p>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          )}
-        </ScrollArea>
 
-        {/* Input */}
-        <div className="p-4 border-t border-border">
-          <div className="flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type a message..."
-              disabled={isLoading}
-              className="flex-1"
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
-              size="icon"
-            >
-              {isLoading ? (
-                <Loader2 size={18} className="animate-spin" />
+            {/* Messages */}
+            <ScrollArea className="h-80 p-4" ref={scrollRef}>
+              {messages.length === 0 ? (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-6"
+                >
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary/20 to-primary/5 rounded-full flex items-center justify-center">
+                    <Bot size={32} className="text-primary" />
+                  </div>
+                  <h4 className="font-medium text-foreground mb-1">Welcome to DishViz AI!</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    I'm here to help you learn about our AR menu solutions.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {quickReplies.map((reply, i) => (
+                      <motion.button
+                        key={i}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        onClick={() => handleQuickReply(reply.text)}
+                        className="text-xs bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2.5 rounded-xl transition-all hover:scale-[1.02] flex items-center gap-1.5 text-left"
+                      >
+                        <span>{reply.icon}</span>
+                        <span className="line-clamp-2">{reply.text}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
               ) : (
-                <Send size={18} />
+                <div className="space-y-4">
+                  {messages.map((msg, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div className={`max-w-[85%] ${msg.role === "user" ? "" : "flex gap-2"}`}>
+                        {msg.role === "assistant" && (
+                          <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <Sparkles size={14} className="text-primary" />
+                          </div>
+                        )}
+                        <div>
+                          <div
+                            className={`rounded-2xl px-4 py-2.5 text-sm ${
+                              msg.role === "user"
+                                ? "bg-primary text-primary-foreground rounded-br-md"
+                                : "bg-muted text-foreground rounded-bl-md"
+                            }`}
+                          >
+                            {msg.content || (
+                              <div className="flex items-center gap-1">
+                                <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                              </div>
+                            )}
+                          </div>
+                          <p className={`text-[10px] text-muted-foreground mt-1 ${msg.role === "user" ? "text-right" : ""}`}>
+                            {formatTime(msg.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                  
+                  {isTyping && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex gap-2"
+                    >
+                      <div className="w-7 h-7 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Sparkles size={14} className="text-primary" />
+                      </div>
+                      <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-2.5">
+                        <div className="flex items-center gap-1">
+                          <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
               )}
-            </Button>
-          </div>
-        </div>
-      </div>
+            </ScrollArea>
+
+            {/* Input */}
+            <div className="p-4 border-t border-border bg-background/50 backdrop-blur-sm">
+              <div className="flex gap-2">
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask me anything..."
+                  disabled={isLoading}
+                  className="flex-1 rounded-xl"
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || isLoading}
+                  size="icon"
+                  className="rounded-xl"
+                >
+                  {isLoading ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <Send size={18} />
+                  )}
+                </Button>
+              </div>
+              <p className="text-[10px] text-center text-muted-foreground mt-2">
+                Powered by DishViz AI
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
