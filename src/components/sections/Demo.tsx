@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Eye, Box } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Eye, Box, Loader2 } from "lucide-react";
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
@@ -29,6 +30,7 @@ export const Demo = () => {
   const [selectedDish, setSelectedDish] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadedModels, setLoadedModels] = useState<Set<number>>(new Set());
+  const [loadingModels, setLoadingModels] = useState<Set<number>>(new Set());
 
   const handleARClick = (e: React.MouseEvent, dishName: string) => {
     e.stopPropagation();
@@ -38,7 +40,16 @@ export const Demo = () => {
 
   const handleLoad3D = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
-    setLoadedModels(prev => new Set([...prev, index]));
+    setLoadingModels(prev => new Set([...prev, index]));
+    // Simulate minimum loading time for smooth UX
+    setTimeout(() => {
+      setLoadedModels(prev => new Set([...prev, index]));
+      setLoadingModels(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(index);
+        return newSet;
+      });
+    }, 500);
   };
 
   return (
@@ -79,7 +90,24 @@ export const Demo = () => {
                 />
               </div>
 
-              {/* 3D Model Viewer - Only loads when user clicks */}
+              {/* Loading Skeleton */}
+              {loadingModels.has(index) && !loadedModels.has(index) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 200 }}
+                  className="mt-3 rounded-2xl overflow-hidden bg-gradient-to-br from-secondary to-background shadow-card"
+                >
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                    <Skeleton className="w-24 h-24 rounded-full" />
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">Loading 3D model...</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* 3D Model Viewer */}
               {loadedModels.has(index) && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -93,7 +121,7 @@ export const Demo = () => {
                     auto-rotate
                     shadow-intensity="0.5"
                     exposure="1"
-                    loading="lazy"
+                    loading="eager"
                     reveal="auto"
                     style={{ width: '100%', height: '200px' }}
                   />
@@ -110,9 +138,14 @@ export const Demo = () => {
                       variant="outline"
                       size="sm"
                       className="gap-2"
+                      disabled={loadingModels.has(index)}
                     >
-                      <Box className="w-4 h-4" />
-                      View 3D
+                      {loadingModels.has(index) ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Box className="w-4 h-4" />
+                      )}
+                      {loadingModels.has(index) ? "Loading..." : "View 3D"}
                     </Button>
                   )}
                   <Button 
