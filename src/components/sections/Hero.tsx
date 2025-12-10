@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { Suspense } from "react";
-import { PastaGLBModel } from "../PastaGLBModel";
+import { Suspense, lazy } from "react";
+
+const PastaGLBModel = lazy(() => import("../PastaGLBModel").then(m => ({ default: m.PastaGLBModel })));
 
 export const Hero = () => {
   return (
