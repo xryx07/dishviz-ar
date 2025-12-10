@@ -5,6 +5,7 @@ import { Suspense, lazy } from "react";
 
 const PastaGLBModel = lazy(() => import("./PastaGLBModel").then(m => ({ default: m.PastaGLBModel })));
 const FalafelGLBModel = lazy(() => import("./FalafelGLBModel").then(m => ({ default: m.FalafelGLBModel })));
+const ManchurianGLBModel = lazy(() => import("./ManchurianGLBModel").then(m => ({ default: m.ManchurianGLBModel })));
 
 interface ARPreviewModalProps {
   isOpen: boolean;
@@ -16,6 +17,9 @@ const getDishModel = (dishName: string) => {
   const name = dishName.toLowerCase();
   if (name.includes('pasta')) {
     return <PastaGLBModel />;
+  }
+  if (name.includes('manchurian')) {
+    return <ManchurianGLBModel />;
   }
   if (name.includes('falafel')) {
     return <FalafelGLBModel />;
