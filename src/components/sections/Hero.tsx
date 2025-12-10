@@ -1,9 +1,4 @@
 import { motion } from "framer-motion";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { Suspense, lazy } from "react";
-
-const PastaGLBModel = lazy(() => import("../PastaGLBModel").then(m => ({ default: m.PastaGLBModel })));
 
 export const Hero = () => {
   return (
@@ -28,20 +23,20 @@ export const Hero = () => {
             className="relative order-1 lg:order-2"
           >
             <div className="relative mx-auto w-full h-[300px] sm:h-[400px] lg:h-[500px] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-background shadow-soft">
-              <Canvas camera={{ position: [0, 0, 4], fov: 50 }}>
-                <Suspense fallback={null}>
-                  <PastaGLBModel />
-                  <OrbitControls 
-                    enableZoom={false} 
-                    autoRotate={false}
-                    minPolarAngle={Math.PI / 4}
-                    maxPolarAngle={Math.PI / 1.5}
-                  />
-                </Suspense>
-              </Canvas>
+              <model-viewer
+                src="/models/pasta_dish.glb"
+                alt="3D pasta dish preview"
+                camera-controls
+                auto-rotate
+                shadow-intensity="1"
+                exposure="1.2"
+                loading="eager"
+                reveal="auto"
+                style={{ width: '100%', height: '100%' }}
+              />
             </div>
             <p className="text-center mt-4 text-sm sm:text-base text-muted-foreground">
-              Drag to rotate • Interactive 3D preview
+              Drag to rotate • Pinch to zoom • Interactive 3D preview
             </p>
           </motion.div>
         </div>
