@@ -1,18 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import burgerImage from "@/assets/dish-burger.jpg";
-import dessertImage from "@/assets/dish-dessert.jpg";
+import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import { ARPreviewModal } from "@/components/ARPreviewModal";
 
 const dishes = [
   {
-    name: "Gourmet Burger",
-    image: burgerImage,
-  },
-  {
-    name: "Chocolate Dessert",
-    image: dessertImage,
+    name: "Hara Bhara Kebab",
+    image: kebabImage,
   },
   {
     name: "Fresh Pasta",
@@ -47,7 +42,7 @@ export const Demo = () => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
           {dishes.map((dish, index) => (
             <motion.div
               key={index}
@@ -62,6 +57,7 @@ export const Demo = () => {
                 <img
                   src={dish.image}
                   alt={dish.name}
+                  loading="lazy"
                   className="w-full aspect-square object-cover group-hover:scale-105 transition-smooth"
                 />
                 <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/10 transition-smooth" />
