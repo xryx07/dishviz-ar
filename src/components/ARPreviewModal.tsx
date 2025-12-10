@@ -1,10 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { Suspense } from "react";
-import { DishModel3D } from "./DishModel3D";
-import { PastaModel3D } from "./PastaModel3D";
-import { DessertModel3D } from "./DessertModel3D";
+import { Suspense, lazy } from "react";
+
+const PastaGLBModel = lazy(() => import("./PastaGLBModel").then(m => ({ default: m.PastaGLBModel })));
+const FalafelGLBModel = lazy(() => import("./FalafelGLBModel").then(m => ({ default: m.FalafelGLBModel })));
 
 interface ARPreviewModalProps {
   isOpen: boolean;
@@ -13,13 +13,15 @@ interface ARPreviewModalProps {
 }
 
 const getDishModel = (dishName: string) => {
-  if (dishName.toLowerCase().includes('pasta')) {
-    return <PastaModel3D />;
+  const name = dishName.toLowerCase();
+  if (name.includes('pasta')) {
+    return <PastaGLBModel />;
   }
-  if (dishName.toLowerCase().includes('dessert') || dishName.toLowerCase().includes('chocolate')) {
-    return <DessertModel3D />;
+  if (name.includes('falafel')) {
+    return <FalafelGLBModel />;
   }
-  return <DishModel3D />;
+  // Default to falafel model for kebab (similar appearance)
+  return <FalafelGLBModel />;
 };
 
 export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProps) => {
