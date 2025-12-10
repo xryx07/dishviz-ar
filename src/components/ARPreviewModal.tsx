@@ -38,6 +38,9 @@ const getModelPath = (dishName: string) => {
   if (name.includes('manchurian')) {
     return '/models/manchurian_dish.glb';
   }
+  if (name.includes('noodles') || name.includes('chow')) {
+    return '/models/noodles_dish.glb';
+  }
   if (name.includes('falafel') || name.includes('kebab')) {
     return '/models/falafel_dish.glb';
   }
@@ -115,10 +118,11 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
             ar-modes="webxr scene-viewer quick-look"
             camera-controls
             auto-rotate
-            shadow-intensity="1"
-            exposure="1"
+            shadow-intensity="0.5"
+            exposure="0.8"
             loading="eager"
             reveal="auto"
+            environment-image="neutral"
             style={{ width: '100%', height: '100%' }}
           />
         </div>
