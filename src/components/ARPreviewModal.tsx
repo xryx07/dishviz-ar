@@ -145,8 +145,12 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   useEffect(() => {
     if (isOpen && modelRef.current) {
       const element = modelRef.current;
+      let progressInterval: NodeJS.Timeout;
+      let fallbackTimeout: NodeJS.Timeout;
       
       const handleLoad = () => {
+        clearInterval(progressInterval);
+        clearTimeout(fallbackTimeout);
         setIsLoading(false);
         setProgress(100);
         setHasError(false);
@@ -155,11 +159,14 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       const handleProgress = (event: Event) => {
         const progressEvent = event as CustomEvent;
         if (progressEvent.detail?.totalProgress !== undefined) {
-          setProgress(Math.round(progressEvent.detail.totalProgress * 100));
+          const realProgress = Math.round(progressEvent.detail.totalProgress * 100);
+          setProgress(prev => Math.max(prev, realProgress));
         }
       };
 
       const handleError = () => {
+        clearInterval(progressInterval);
+        clearTimeout(fallbackTimeout);
         setHasError(true);
         setIsLoading(false);
       };
@@ -167,6 +174,20 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       element.addEventListener('load', handleLoad);
       element.addEventListener('progress', handleProgress);
       element.addEventListener('error', handleError);
+      
+      // Simulate progress if real progress events aren't firing
+      progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev < 90) return prev + Math.random() * 15;
+          return prev;
+        });
+      }, 300);
+      
+      // Fallback: hide loading after 5 seconds even if not fully loaded
+      fallbackTimeout = setTimeout(() => {
+        setIsLoading(false);
+        setProgress(100);
+      }, 5000);
       
       if ((element as any).loaded) {
         handleLoad();
@@ -176,6 +197,8 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
         element.removeEventListener('load', handleLoad);
         element.removeEventListener('progress', handleProgress);
         element.removeEventListener('error', handleError);
+        clearInterval(progressInterval);
+        clearTimeout(fallbackTimeout);
       };
     }
   }, [isOpen]);
