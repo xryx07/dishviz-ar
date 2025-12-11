@@ -34,21 +34,26 @@ declare global {
   }
 }
 
-const getModelPath = (dishName: string) => {
+import kebabImage from "@/assets/dish-kebab.jpg";
+import pastaImage from "@/assets/dish-pasta.jpg";
+import manchurianImage from "@/assets/dish-manchurian.jpg";
+import noodlesImage from "@/assets/dish-noodles.jpg";
+
+const getDishData = (dishName: string) => {
   const name = dishName.toLowerCase();
   if (name.includes('pasta')) {
-    return '/models/pasta_dish.glb';
+    return { model: '/models/pasta_dish.glb', poster: pastaImage };
   }
   if (name.includes('manchurian')) {
-    return '/models/manchurian_dish.glb';
+    return { model: '/models/manchurian_dish.glb', poster: manchurianImage };
   }
   if (name.includes('noodles') || name.includes('chow')) {
-    return '/models/noodles_dish.glb';
+    return { model: '/models/noodles_dish.glb', poster: noodlesImage };
   }
   if (name.includes('falafel') || name.includes('kebab')) {
-    return '/models/falafel_dish.glb';
+    return { model: '/models/falafel_dish.glb', poster: kebabImage };
   }
-  return '/models/falafel_dish.glb';
+  return { model: '/models/falafel_dish.glb', poster: kebabImage };
 };
 
 export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProps) => {
@@ -154,7 +159,8 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
 
           <model-viewer
             ref={modelRef as React.RefObject<HTMLElement>}
-            src={getModelPath(dishName)}
+            src={getDishData(dishName).model}
+            poster={getDishData(dishName).poster}
             alt={`3D model of ${dishName}`}
             ar
             ar-modes="webxr scene-viewer quick-look"

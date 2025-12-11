@@ -14,21 +14,25 @@ const dishes = [
     name: "Hara Bhara Kebab",
     image: kebabImage,
     model: "/models/falafel_dish.glb",
+    poster: kebabImage,
   },
   {
     name: "Fresh Pasta",
     image: pastaImage,
     model: "/models/pasta_dish.glb",
+    poster: pastaImage,
   },
   {
     name: "Manchurian",
     image: manchurianImage,
     model: "/models/manchurian_dish.glb",
+    poster: manchurianImage,
   },
   {
     name: "Chow Mein Noodles",
     image: noodlesImage,
     model: "/models/noodles_dish.glb",
+    poster: noodlesImage,
   },
 ];
 
@@ -76,7 +80,7 @@ export const Demo = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {dishes.map((dish, index) => (
             <motion.div
               key={index}
@@ -123,6 +127,7 @@ export const Demo = () => {
                   <model-viewer
                     src={dish.model}
                     alt={`3D model of ${dish.name}`}
+                    poster={dish.poster}
                     camera-controls
                     auto-rotate
                     shadow-intensity="0.5"
