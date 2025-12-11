@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Smartphone, Loader2 } from "lucide-react";
+import { Smartphone } from "lucide-react";
 
 interface ARPreviewModalProps {
   isOpen: boolean;
@@ -29,8 +30,6 @@ declare global {
           'auto-rotate-delay'?: string;
           'rotation-per-second'?: string;
           'interaction-prompt'?: string;
-          'max-camera-orbit'?: string;
-          'min-camera-orbit'?: string;
         },
         HTMLElement
       >;
@@ -60,7 +59,8 @@ const getDishData = (dishName: string) => {
   return { model: '/models/falafel_dish.glb', poster: kebabImage };
 };
 
-// Preload models on page load for faster AR experience
+// Preload models immediately
+const modelCache = new Map<string, boolean>();
 const preloadModels = () => {
   const models = [
     '/models/falafel_dish.glb',
@@ -70,16 +70,14 @@ const preloadModels = () => {
   ];
   
   models.forEach(model => {
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = model;
-    link.as = 'fetch';
-    link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
+    if (!modelCache.has(model)) {
+      fetch(model, { cache: 'force-cache' })
+        .then(() => modelCache.set(model, true))
+        .catch(() => {});
+    }
   });
 };
 
-// Run preload once
 if (typeof window !== 'undefined') {
   preloadModels();
 }
@@ -88,6 +86,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [hasError, setHasError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const modelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -116,7 +115,6 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       element.addEventListener('progress', handleProgress);
       element.addEventListener('error', handleError);
       
-      // Check if already loaded
       if ((element as any).loaded) {
         handleLoad();
       }
@@ -134,6 +132,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       setIsLoading(true);
       setProgress(0);
       setHasError(false);
+      setImageLoaded(false);
     }
   }, [isOpen, dishName]);
 
@@ -150,42 +149,95 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] h-[75vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-playfair">{dishName} - AR Preview</DialogTitle>
+      <DialogContent className="sm:max-w-[600px] h-[75vh] flex flex-col p-4 sm:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-xl sm:text-2xl font-playfair">{dishName}</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 w-full rounded-2xl overflow-hidden bg-gradient-to-br from-secondary to-background relative min-h-0">
-          {/* Poster image shows immediately while model loads */}
-          {isLoading && !hasError && (
-            <div className="absolute inset-0 z-10">
-              <img 
-                src={dishData.poster} 
-                alt={dishName}
-                className="w-full h-full object-contain opacity-30"
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary transition-all duration-200 ease-out"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground font-medium">
-                  {progress > 0 ? `Loading... ${progress}%` : 'Preparing 3D model...'}
-                </p>
-              </div>
-            </div>
-          )}
+        <div className="flex-1 w-full rounded-2xl overflow-hidden bg-muted/50 relative min-h-0">
+          <AnimatePresence>
+            {isLoading && !hasError && (
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 z-10 flex items-center justify-center"
+              >
+                {/* Animated background image */}
+                <motion.img 
+                  src={dishData.poster} 
+                  alt={dishName}
+                  onLoad={() => setImageLoaded(true)}
+                  initial={{ opacity: 0, scale: 1.1 }}
+                  animate={{ 
+                    opacity: imageLoaded ? 0.4 : 0, 
+                    scale: 1,
+                  }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="absolute inset-0 w-full h-full object-cover blur-sm"
+                />
+                
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-background/60" />
+                
+                {/* Loading spinner and progress */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.4 }}
+                  className="relative z-10 flex flex-col items-center gap-4"
+                >
+                  {/* Circular progress */}
+                  <div className="relative w-20 h-20">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="40"
+                        cy="40"
+                        r="36"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                        className="text-muted"
+                      />
+                      <motion.circle
+                        cx="40"
+                        cy="40"
+                        r="36"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeLinecap="round"
+                        className="text-primary"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: progress / 100 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        style={{
+                          strokeDasharray: "226",
+                          strokeDashoffset: 0,
+                        }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-lg font-semibold text-foreground">{progress}%</span>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Loading 3D Model...
+                  </p>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {hasError && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 z-10 gap-4">
-              <p className="text-sm text-muted-foreground">Failed to load model. Please try again.</p>
+              <p className="text-sm text-muted-foreground">Failed to load. Please try again.</p>
               <Button onClick={() => {
                 setHasError(false);
                 setIsLoading(true);
                 setProgress(0);
-              }}>
+              }} size="sm">
                 Retry
               </Button>
             </div>
@@ -201,7 +253,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
             camera-controls
             auto-rotate
             auto-rotate-delay="0"
-            rotation-per-second="30deg"
+            rotation-per-second="45deg"
             shadow-intensity="0"
             exposure="1"
             loading="eager"
@@ -211,7 +263,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
           />
         </div>
         
-        <div className="flex flex-col gap-2 pt-2">
+        <div className="flex flex-col gap-2 pt-3">
           <Button 
             onClick={handleARActivate}
             className="w-full gap-2"
@@ -219,10 +271,10 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
             disabled={isLoading}
           >
             <Smartphone className="w-5 h-5" />
-            {isLoading ? 'Loading...' : 'Launch AR on Your Device'}
+            {isLoading ? 'Loading...' : 'View in AR'}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            Drag to rotate • Pinch to zoom • Auto-rotating
+            Drag to rotate • Pinch to zoom
           </p>
         </div>
       </DialogContent>
