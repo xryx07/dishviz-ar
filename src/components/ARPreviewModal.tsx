@@ -1,8 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useEffect, useRef, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Smartphone } from "lucide-react";
+import { Smartphone, Loader2 } from "lucide-react";
 
 interface ARPreviewModalProps {
   isOpen: boolean;
@@ -27,6 +26,11 @@ declare global {
           reveal?: string;
           poster?: string;
           'environment-image'?: string;
+          'auto-rotate-delay'?: string;
+          'rotation-per-second'?: string;
+          'interaction-prompt'?: string;
+          'max-camera-orbit'?: string;
+          'min-camera-orbit'?: string;
         },
         HTMLElement
       >;
@@ -55,6 +59,30 @@ const getDishData = (dishName: string) => {
   }
   return { model: '/models/falafel_dish.glb', poster: kebabImage };
 };
+
+// Preload models on page load for faster AR experience
+const preloadModels = () => {
+  const models = [
+    '/models/falafel_dish.glb',
+    '/models/pasta_dish.glb',
+    '/models/manchurian_dish.glb',
+    '/models/noodles_dish.glb'
+  ];
+  
+  models.forEach(model => {
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = model;
+    link.as = 'fetch';
+    link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+  });
+};
+
+// Run preload once
+if (typeof window !== 'undefined') {
+  preloadModels();
+}
 
 export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProps) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -88,10 +116,10 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       element.addEventListener('progress', handleProgress);
       element.addEventListener('error', handleError);
       
-      // Force a small progress to show loading started
-      setTimeout(() => {
-        if (progress === 0) setProgress(5);
-      }, 100);
+      // Check if already loaded
+      if ((element as any).loaded) {
+        handleLoad();
+      }
       
       return () => {
         element.removeEventListener('load', handleLoad);
@@ -99,7 +127,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
         element.removeEventListener('error', handleError);
       };
     }
-  }, [isOpen, progress]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -118,6 +146,8 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
     }
   };
 
+  const dishData = getDishData(dishName);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] h-[75vh] flex flex-col">
@@ -125,22 +155,26 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
           <DialogTitle className="text-2xl font-playfair">{dishName} - AR Preview</DialogTitle>
         </DialogHeader>
         <div className="flex-1 w-full rounded-2xl overflow-hidden bg-gradient-to-br from-secondary to-background relative min-h-0">
+          {/* Poster image shows immediately while model loads */}
           {isLoading && !hasError && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 z-10 gap-4">
-              <div className="relative w-32 h-32">
-                <Skeleton className="w-full h-full rounded-full" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="absolute inset-0 z-10">
+              <img 
+                src={dishData.poster} 
+                alt={dishName}
+                className="w-full h-full object-contain opacity-30"
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary transition-all duration-200 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
+                <p className="text-sm text-muted-foreground font-medium">
+                  {progress > 0 ? `Loading... ${progress}%` : 'Preparing 3D model...'}
+                </p>
               </div>
-              
-              <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary transition-all duration-300 ease-out"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <p className="text-sm text-muted-foreground">Loading 3D model... {progress}%</p>
             </div>
           )}
 
@@ -159,18 +193,20 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
 
           <model-viewer
             ref={modelRef as React.RefObject<HTMLElement>}
-            src={getDishData(dishName).model}
-            poster={getDishData(dishName).poster}
+            src={dishData.model}
+            poster={dishData.poster}
             alt={`3D model of ${dishName}`}
             ar
             ar-modes="webxr scene-viewer quick-look"
             camera-controls
             auto-rotate
-            shadow-intensity="0.3"
-            exposure="0.9"
+            auto-rotate-delay="0"
+            rotation-per-second="30deg"
+            shadow-intensity="0"
+            exposure="1"
             loading="eager"
             reveal="auto"
-            environment-image="neutral"
+            interaction-prompt="none"
             style={{ width: '100%', height: '100%' }}
           />
         </div>
@@ -180,9 +216,10 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
             onClick={handleARActivate}
             className="w-full gap-2"
             size="lg"
+            disabled={isLoading}
           >
             <Smartphone className="w-5 h-5" />
-            Launch AR on Your Device
+            {isLoading ? 'Loading...' : 'Launch AR on Your Device'}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             Drag to rotate • Pinch to zoom • Auto-rotating
