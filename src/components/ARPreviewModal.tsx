@@ -87,7 +87,60 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   const [progress, setProgress] = useState(0);
   const [hasError, setHasError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [arSupported, setArSupported] = useState<boolean | null>(null);
   const modelRef = useRef<HTMLElement>(null);
+
+  // Check AR support
+  useEffect(() => {
+    const checkARSupport = async () => {
+      // Check if on mobile
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      if (!isMobile) {
+        setArSupported(false);
+        return;
+      }
+
+      // Check for WebXR support
+      if ('xr' in navigator) {
+        try {
+          const supported = await (navigator as any).xr?.isSessionSupported?.('immersive-ar');
+          if (supported) {
+            setArSupported(true);
+            return;
+          }
+        } catch (e) {
+          // WebXR not available
+        }
+      }
+
+      // Check for iOS AR Quick Look support (Safari on iOS)
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+      
+      if (isIOS && isSafari) {
+        setArSupported(true);
+        return;
+      }
+
+      // Check for Android Scene Viewer support
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isChrome = /Chrome/i.test(navigator.userAgent);
+      
+      if (isAndroid && isChrome) {
+        // Most modern Android Chrome supports Scene Viewer, but not all devices have ARCore
+        // We'll optimistically assume support but the button will gracefully fail
+        setArSupported(true);
+        return;
+      }
+
+      setArSupported(false);
+    };
+
+    if (isOpen) {
+      checkARSupport();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && modelRef.current) {
@@ -264,15 +317,26 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
         </div>
         
         <div className="flex flex-col gap-2 pt-3">
-          <Button 
-            onClick={handleARActivate}
-            className="w-full gap-2"
-            size="lg"
-            disabled={isLoading}
-          >
-            <Smartphone className="w-5 h-5" />
-            {isLoading ? 'Loading...' : 'View in AR'}
-          </Button>
+          {arSupported === false ? (
+            <div className="bg-muted/50 rounded-lg p-4 text-center">
+              <p className="text-sm font-medium text-foreground mb-1">
+                AR not available on this device
+              </p>
+              <p className="text-xs text-muted-foreground">
+                AR requires a compatible mobile device (iPhone 6s+ with Safari, or Android with Chrome and ARCore support). You can still interact with the 3D model above!
+              </p>
+            </div>
+          ) : (
+            <Button 
+              onClick={handleARActivate}
+              className="w-full gap-2"
+              size="lg"
+              disabled={isLoading || arSupported === null}
+            >
+              <Smartphone className="w-5 h-5" />
+              {isLoading ? 'Loading...' : arSupported === null ? 'Checking AR...' : 'View in AR'}
+            </Button>
+          )}
           <p className="text-center text-xs text-muted-foreground">
             Drag to rotate • Pinch to zoom
           </p>
