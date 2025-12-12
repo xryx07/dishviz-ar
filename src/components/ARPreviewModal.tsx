@@ -16,6 +16,7 @@ declare global {
       'model-viewer': React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement> & {
           src?: string;
+          'ios-src'?: string;
           alt?: string;
           ar?: boolean;
           'ar-modes'?: string;
@@ -44,19 +45,32 @@ import noodlesImage from "@/assets/dish-noodles.jpg";
 
 const getDishData = (dishName: string) => {
   const name = dishName.toLowerCase();
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  
+  // Use USDZ for iOS AR Quick Look, GLB for Android/web
+  const getModelPaths = (baseName: string) => ({
+    glb: `/models/${baseName}.glb`,
+    usdz: `/models/${baseName}.usdz`,
+  });
+  
   if (name.includes('pasta')) {
-    return { model: '/models/pasta_dish.glb', poster: pastaImage };
+    const models = getModelPaths('pasta_dish');
+    return { model: models.glb, iosModel: models.usdz, poster: pastaImage };
   }
   if (name.includes('manchurian')) {
-    return { model: '/models/manchurian_dish.glb', poster: manchurianImage };
+    const models = getModelPaths('manchurian_dish');
+    return { model: models.glb, iosModel: models.usdz, poster: manchurianImage };
   }
   if (name.includes('noodles') || name.includes('chow')) {
-    return { model: '/models/noodles_dish.glb', poster: noodlesImage };
+    const models = getModelPaths('noodles_dish');
+    return { model: models.glb, iosModel: models.usdz, poster: noodlesImage };
   }
   if (name.includes('falafel') || name.includes('kebab')) {
-    return { model: '/models/falafel_dish.glb', poster: kebabImage };
+    const models = getModelPaths('falafel_dish');
+    return { model: models.glb, iosModel: models.usdz, poster: kebabImage };
   }
-  return { model: '/models/falafel_dish.glb', poster: kebabImage };
+  const models = getModelPaths('falafel_dish');
+  return { model: models.glb, iosModel: models.usdz, poster: kebabImage };
 };
 
 // Preload models immediately
@@ -223,9 +237,23 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
     if (modelRef.current) {
       const element = modelRef.current as any;
       
-      // Try model-viewer's built-in AR first
+      // Try model-viewer's built-in AR first (works when ios-src USDZ is available)
       if (element.canActivateAR) {
         element.activateAR();
+        return;
+      }
+      
+      // Fallback for iOS: Try to open USDZ directly via AR Quick Look
+      if (isIOS) {
+        const usdzUrl = `${window.location.origin}${dishData.iosModel}`;
+        const anchor = document.createElement('a');
+        anchor.setAttribute('rel', 'ar');
+        anchor.setAttribute('href', usdzUrl);
+        const img = document.createElement('img');
+        anchor.appendChild(img);
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
         return;
       }
       
@@ -234,12 +262,6 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
         const modelUrl = `${window.location.origin}${dishData.model}`;
         const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelUrl)}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end;`;
         window.location.href = sceneViewerUrl;
-        return;
-      }
-      
-      // iOS requires USDZ format for AR Quick Look - GLB won't work
-      if (isIOS) {
-        alert('AR on iPhone requires USDZ format files. GLB files are only supported on Android. You can still view and interact with the 3D model above!');
         return;
       }
     }
@@ -346,6 +368,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
           <model-viewer
             ref={modelRef as React.RefObject<HTMLElement>}
             src={dishData.model}
+            ios-src={dishData.iosModel}
             poster={dishData.poster}
             alt={`3D model of ${dishName}`}
             ar
