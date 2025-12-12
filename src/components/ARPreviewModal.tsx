@@ -217,18 +217,30 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   }, [isOpen, dishName]);
 
   const handleARActivate = () => {
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    
     if (modelRef.current) {
       const element = modelRef.current as any;
-      if (element.activateAR) {
+      
+      // Try model-viewer's built-in AR first
+      if (element.canActivateAR) {
         element.activateAR();
-      } else {
-        // Fallback: Open Scene Viewer directly for Android
-        const isAndroid = /Android/i.test(navigator.userAgent);
-        if (isAndroid) {
-          const modelUrl = `${window.location.origin}${dishData.model}`;
-          const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelUrl)}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end;`;
-          window.location.href = sceneViewerUrl;
-        }
+        return;
+      }
+      
+      // Fallback for Android: Open Scene Viewer directly
+      if (isAndroid) {
+        const modelUrl = `${window.location.origin}${dishData.model}`;
+        const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelUrl)}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end;`;
+        window.location.href = sceneViewerUrl;
+        return;
+      }
+      
+      // iOS requires USDZ format for AR Quick Look - GLB won't work
+      if (isIOS) {
+        alert('AR on iPhone requires USDZ format files. GLB files are only supported on Android. You can still view and interact with the 3D model above!');
+        return;
       }
     }
   };
