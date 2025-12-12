@@ -43,14 +43,16 @@ import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
 import noodlesImage from "@/assets/dish-noodles.jpg";
 
+// Supabase storage URL for USDZ files
+const STORAGE_URL = 'https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models';
+
 const getDishData = (dishName: string) => {
   const name = dishName.toLowerCase();
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
   
-  // Use USDZ for iOS AR Quick Look, GLB for Android/web
+  // GLB from local, USDZ from Supabase Storage (larger files)
   const getModelPaths = (baseName: string) => ({
     glb: `/models/${baseName}.glb`,
-    usdz: `/models/${baseName}.usdz`,
+    usdz: `${STORAGE_URL}/${baseName}.usdz`,
   });
   
   if (name.includes('pasta')) {
@@ -245,7 +247,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       
       // Fallback for iOS: Try to open USDZ directly via AR Quick Look
       if (isIOS) {
-        const usdzUrl = `${window.location.origin}${dishData.iosModel}`;
+        const usdzUrl = dishData.iosModel; // Already full URL from storage
         const anchor = document.createElement('a');
         anchor.setAttribute('rel', 'ar');
         anchor.setAttribute('href', usdzUrl);
