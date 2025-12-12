@@ -143,64 +143,68 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen && modelRef.current) {
-      const element = modelRef.current;
-      let progressInterval: NodeJS.Timeout;
-      let fallbackTimeout: NodeJS.Timeout;
-      
-      const handleLoad = () => {
-        clearInterval(progressInterval);
-        clearTimeout(fallbackTimeout);
-        setIsLoading(false);
-        setProgress(100);
-        setHasError(false);
-      };
-      
-      const handleProgress = (event: Event) => {
-        const progressEvent = event as CustomEvent;
-        if (progressEvent.detail?.totalProgress !== undefined) {
-          const realProgress = Math.round(progressEvent.detail.totalProgress * 100);
-          setProgress(prev => Math.max(prev, realProgress));
-        }
-      };
+    if (!isOpen) return;
 
-      const handleError = () => {
-        clearInterval(progressInterval);
-        clearTimeout(fallbackTimeout);
-        setHasError(true);
-        setIsLoading(false);
-      };
+    const element = modelRef.current;
+    let progressInterval: ReturnType<typeof setInterval> | undefined;
+    let fallbackTimeout: ReturnType<typeof setTimeout> | undefined;
 
+    const handleLoad = () => {
+      if (progressInterval) clearInterval(progressInterval);
+      if (fallbackTimeout) clearTimeout(fallbackTimeout);
+      setIsLoading(false);
+      setProgress(100);
+      setHasError(false);
+    };
+
+    const handleProgress = (event: Event) => {
+      const progressEvent = event as CustomEvent;
+      if (progressEvent.detail?.totalProgress !== undefined) {
+        const realProgress = Math.round(progressEvent.detail.totalProgress * 100);
+        setProgress(prev => Math.max(prev, realProgress));
+      }
+    };
+
+    const handleError = () => {
+      if (progressInterval) clearInterval(progressInterval);
+      if (fallbackTimeout) clearTimeout(fallbackTimeout);
+      setHasError(true);
+      setIsLoading(false);
+    };
+
+    if (element) {
       element.addEventListener('load', handleLoad);
       element.addEventListener('progress', handleProgress);
       element.addEventListener('error', handleError);
-      
-      // Simulate progress if real progress events aren't firing
-      progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev < 90) return prev + Math.random() * 15;
-          return prev;
-        });
-      }, 300);
-      
-      // Fallback: hide loading after 5 seconds even if not fully loaded
-      fallbackTimeout = setTimeout(() => {
-        setIsLoading(false);
-        setProgress(100);
-      }, 5000);
-      
+
       if ((element as any).loaded) {
         handleLoad();
       }
-      
-      return () => {
+    }
+
+    // Simulate progress if real progress events aren't firing
+    progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev < 90) return prev + Math.random() * 15;
+        return prev;
+      });
+    }, 300);
+
+    // Fallback: hide loading after 5 seconds even if not fully loaded
+    fallbackTimeout = setTimeout(() => {
+      setIsLoading(false);
+      setProgress(100);
+    }, 5000);
+
+    return () => {
+      if (element) {
         element.removeEventListener('load', handleLoad);
         element.removeEventListener('progress', handleProgress);
         element.removeEventListener('error', handleError);
-        clearInterval(progressInterval);
-        clearTimeout(fallbackTimeout);
-      };
-    }
+      }
+      if (progressInterval) clearInterval(progressInterval);
+      if (fallbackTimeout) clearTimeout(fallbackTimeout);
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -362,10 +366,10 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
               onClick={handleARActivate}
               className="w-full gap-2"
               size="lg"
-              disabled={isLoading || arSupported === null}
+              disabled={arSupported === null}
             >
               <Smartphone className="w-5 h-5" />
-              {isLoading ? 'Loading...' : arSupported === null ? 'Checking AR...' : 'View in AR'}
+              {arSupported === null ? 'Checking AR...' : 'View in AR'}
             </Button>
           )}
           <p className="text-center text-xs text-muted-foreground">
