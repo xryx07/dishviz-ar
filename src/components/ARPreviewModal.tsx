@@ -239,36 +239,38 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   const handleARActivate = () => {
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     const isAndroid = /Android/i.test(navigator.userAgent);
-    
+
+    // Prefer native flows per platform for reliability
+    if (isIOS) {
+      // Always open USDZ directly via AR Quick Look
+      const usdzUrl = dishData.iosModel; // Full URL to storage
+      const anchor = document.createElement("a");
+      anchor.setAttribute("rel", "ar");
+      anchor.setAttribute("href", usdzUrl);
+      const img = document.createElement("img");
+      anchor.appendChild(img);
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      return;
+    }
+
+    if (isAndroid) {
+      // Open Scene Viewer directly
+      const modelUrl = `${window.location.origin}${dishData.model}`;
+      const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
+        modelUrl,
+      )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(
+        window.location.href,
+      )};end;`;
+      window.location.href = sceneViewerUrl;
+      return;
+    }
+
     if (modelRef.current) {
       const element = modelRef.current as any;
-      
-      // Try model-viewer's built-in AR first (works when ios-src USDZ is available)
       if (element.canActivateAR) {
         element.activateAR();
-        return;
-      }
-      
-      // Fallback for iOS: Try to open USDZ directly via AR Quick Look
-      if (isIOS) {
-        const usdzUrl = dishData.iosModel; // Already full URL from storage
-        const anchor = document.createElement('a');
-        anchor.setAttribute('rel', 'ar');
-        anchor.setAttribute('href', usdzUrl);
-        const img = document.createElement('img');
-        anchor.appendChild(img);
-        document.body.appendChild(anchor);
-        anchor.click();
-        document.body.removeChild(anchor);
-        return;
-      }
-      
-      // Fallback for Android: Open Scene Viewer directly
-      if (isAndroid) {
-        const modelUrl = `${window.location.origin}${dishData.model}`;
-        const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(modelUrl)}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(window.location.href)};end;`;
-        window.location.href = sceneViewerUrl;
-        return;
       }
     }
   };
