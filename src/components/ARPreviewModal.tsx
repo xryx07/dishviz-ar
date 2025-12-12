@@ -49,30 +49,34 @@ const STORAGE_URL = 'https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/
 const getDishData = (dishName: string) => {
   const name = dishName.toLowerCase();
   
-  // GLB from local, USDZ from Supabase Storage (larger files)
-  const getModelPaths = (baseName: string) => ({
-    glb: `/models/${baseName}.glb`,
-    usdz: `${STORAGE_URL}/${baseName}.usdz`,
-  });
-  
-  if (name.includes('pasta')) {
-    const models = getModelPaths('pasta_dish');
-    return { model: models.glb, iosModel: models.usdz, poster: pastaImage };
-  }
-  if (name.includes('manchurian')) {
-    const models = getModelPaths('manchurian_dish');
-    return { model: models.glb, iosModel: models.usdz, poster: manchurianImage };
+  // USDZ files use actual names from storage (URL encoded)
+  if (name.includes('pasta') || name.includes('manchurian')) {
+    return { 
+      model: `/models/${name.includes('pasta') ? 'pasta' : 'manchurian'}_dish.glb`, 
+      iosModel: `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`, 
+      poster: name.includes('pasta') ? pastaImage : manchurianImage 
+    };
   }
   if (name.includes('noodles') || name.includes('chow')) {
-    const models = getModelPaths('noodles_dish');
-    return { model: models.glb, iosModel: models.usdz, poster: noodlesImage };
+    return { 
+      model: '/models/noodles_dish.glb', 
+      iosModel: `${STORAGE_URL}/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz`, 
+      poster: noodlesImage 
+    };
   }
   if (name.includes('falafel') || name.includes('kebab')) {
-    const models = getModelPaths('falafel_dish');
-    return { model: models.glb, iosModel: models.usdz, poster: kebabImage };
+    return { 
+      model: '/models/falafel_dish.glb', 
+      iosModel: `${STORAGE_URL}/falafel%2Bballs%2B3d%2Bmodel.usdz`, 
+      poster: kebabImage 
+    };
   }
-  const models = getModelPaths('falafel_dish');
-  return { model: models.glb, iosModel: models.usdz, poster: kebabImage };
+  // Default to falafel
+  return { 
+    model: '/models/falafel_dish.glb', 
+    iosModel: `${STORAGE_URL}/falafel%2Bballs%2B3d%2Bmodel.usdz`, 
+    poster: kebabImage 
+  };
 };
 
 // Preload models immediately
