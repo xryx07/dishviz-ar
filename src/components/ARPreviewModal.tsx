@@ -2,7 +2,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Smartphone } from "lucide-react";
+import { Smartphone, Copy, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
+
+// Detect in-app browsers that don't support AR
+const isInAppBrowser = () => {
+  const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+  // Instagram, Facebook, Twitter, LinkedIn, TikTok, Snapchat, WeChat, etc.
+  return /FBAN|FBAV|Instagram|Twitter|LinkedIn|TikTok|Snapchat|MicroMessenger|Line\//i.test(ua);
+};
+
+const isIOSDevice = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 interface ARPreviewModalProps {
   isOpen: boolean;
@@ -118,7 +128,26 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   const [hasError, setHasError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [arSupported, setArSupported] = useState<boolean | null>(null);
+  const [showInAppWarning, setShowInAppWarning] = useState(false);
   const modelRef = useRef<HTMLElement>(null);
+
+  // Check for in-app browser on iOS
+  useEffect(() => {
+    if (isOpen && isIOSDevice() && isInAppBrowser()) {
+      setShowInAppWarning(true);
+    } else {
+      setShowInAppWarning(false);
+    }
+  }, [isOpen]);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copied! Open Safari and paste to view AR.");
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
 
   // Check AR support
   useEffect(() => {
@@ -405,7 +434,38 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
         </div>
         
         <div className="flex flex-col gap-2 pt-3">
-          {arSupported === false ? (
+          {showInAppWarning ? (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 text-center">
+              <p className="text-sm font-medium text-foreground mb-2">
+                📱 Open in Safari for AR
+              </p>
+              <p className="text-xs text-muted-foreground mb-3">
+                AR doesn't work in this browser. Copy the link below and open it in Safari to view in AR.
+              </p>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleCopyLink}
+                  className="flex-1 gap-2"
+                  variant="outline"
+                  size="sm"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy Link
+                </Button>
+                <Button 
+                  onClick={() => {
+                    // Try to open in Safari (works on some devices)
+                    window.open(window.location.href, '_blank');
+                  }}
+                  className="flex-1 gap-2"
+                  size="sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open Browser
+                </Button>
+              </div>
+            </div>
+          ) : arSupported === false ? (
             <div className="bg-muted/50 rounded-lg p-4 text-center">
               <p className="text-sm font-medium text-foreground mb-1">
                 AR not available on this device
