@@ -49,14 +49,23 @@ const STORAGE_URL = 'https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/
 const getDishData = (dishName: string) => {
   const name = dishName.toLowerCase();
   
-  // USDZ files use actual names from storage (URL encoded)
-  if (name.includes('pasta') || name.includes('manchurian')) {
+  // Pasta dish
+  if (name.includes('pasta')) {
     return { 
-      model: `/models/${name.includes('pasta') ? 'pasta' : 'manchurian'}_dish.glb`, 
-      iosModel: `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`, 
-      poster: name.includes('pasta') ? pastaImage : manchurianImage 
+      model: '/models/pasta_dish.glb', 
+      iosModel: `${STORAGE_URL}/pasta%2Bdish%2B3d%2Bmodel.usdz`, 
+      poster: pastaImage 
     };
   }
+  // Manchurian dish - uses braised pork USDZ
+  if (name.includes('manchurian')) {
+    return { 
+      model: '/models/manchurian_dish.glb', 
+      iosModel: `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`, 
+      poster: manchurianImage 
+    };
+  }
+  // Noodles dish
   if (name.includes('noodles') || name.includes('chow')) {
     return { 
       model: '/models/noodles_dish.glb', 
@@ -64,6 +73,7 @@ const getDishData = (dishName: string) => {
       poster: noodlesImage 
     };
   }
+  // Falafel/Kebab dish
   if (name.includes('falafel') || name.includes('kebab')) {
     return { 
       model: '/models/falafel_dish.glb', 
