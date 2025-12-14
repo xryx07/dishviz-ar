@@ -99,27 +99,53 @@ const getDishData = (dishName: string) => {
   };
 };
 
-// Preload models immediately
+// Preload models immediately (GLB for web, USDZ for iOS)
 const modelCache = new Map<string, boolean>();
 const preloadModels = () => {
-  const models = [
+  // GLB models for web
+  const glbModels = [
     '/models/falafel_dish.glb',
     '/models/pasta_dish.glb',
     '/models/manchurian_dish.glb',
     '/models/noodles_dish.glb'
   ];
   
-  models.forEach(model => {
+  // USDZ models for iOS AR
+  const usdzModels = [
+    `${STORAGE_URL}/pasta%2Bdish%2B3d%2Bmodel.usdz`,
+    `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`,
+    `${STORAGE_URL}/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz`,
+    `${STORAGE_URL}/falafel%2Bballs%2B3d%2Bmodel.usdz`
+  ];
+  
+  // Preload GLB models
+  glbModels.forEach(model => {
     if (!modelCache.has(model)) {
       fetch(model, { cache: 'force-cache' })
         .then(() => modelCache.set(model, true))
         .catch(() => {});
     }
   });
+  
+  // Preload USDZ on iOS devices using link prefetch
+  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    usdzModels.forEach(model => {
+      if (!modelCache.has(model)) {
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = model;
+        link.as = 'fetch';
+        link.crossOrigin = 'anonymous';
+        document.head.appendChild(link);
+        modelCache.set(model, true);
+      }
+    });
+  }
 };
 
 if (typeof window !== 'undefined') {
-  preloadModels();
+  // Delay preload slightly to not block initial render
+  setTimeout(preloadModels, 1000);
 }
 
 export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProps) => {

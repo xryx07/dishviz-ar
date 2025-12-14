@@ -12,24 +12,32 @@ import { ARPreviewModal } from "@/components/ARPreviewModal";
 const dishes = [
   {
     name: "Hara Bhara Kebab",
+    description: "Crispy spinach & pea patties with mint chutney",
+    price: "₹249",
     image: kebabImage,
     model: "/models/falafel_dish.glb",
     poster: kebabImage,
   },
   {
     name: "Fresh Pasta",
+    description: "Creamy Alfredo with herbs & parmesan",
+    price: "₹349",
     image: pastaImage,
     model: "/models/pasta_dish.glb",
     poster: pastaImage,
   },
   {
     name: "Manchurian",
+    description: "Indo-Chinese veg balls in spicy sauce",
+    price: "₹279",
     image: manchurianImage,
     model: "/models/manchurian_dish.glb",
     poster: manchurianImage,
   },
   {
     name: "Chow Mein Noodles",
+    description: "Stir-fried noodles with fresh vegetables",
+    price: "₹229",
     image: noodlesImage,
     model: "/models/noodles_dish.glb",
     poster: noodlesImage,
@@ -132,10 +140,14 @@ export const Demo = () => {
               </div>
 
               {/* Info Section */}
-              <div className="p-5 space-y-4">
-                <h3 className="text-xl font-playfair font-bold text-foreground">{dish.name}</h3>
+              <div className="p-5 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-xl font-playfair font-bold text-foreground">{dish.name}</h3>
+                  <span className="text-lg font-bold text-primary whitespace-nowrap">{dish.price}</span>
+                </div>
+                <p className="text-sm text-muted-foreground">{dish.description}</p>
                 
-                <div className="flex gap-3">
+                <div className="flex gap-3 pt-1">
                   {!loadedModels.has(index) && (
                     <Button 
                       onClick={(e) => handleLoad3D(e, index)}
@@ -226,10 +238,12 @@ export const Demo = () => {
                 </motion.div>
               )}
               
-              <div className="mt-4 text-center space-y-3">
+              <div className="mt-4 text-center space-y-2">
                 <p className="text-foreground font-medium text-lg">{dish.name}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{dish.description}</p>
+                <p className="text-primary font-bold">{dish.price}</p>
                 
-                <div className="flex gap-2 justify-center">
+                <div className="flex gap-2 justify-center pt-1">
                   {!loadedModels.has(index) && (
                     <Button 
                       onClick={(e) => handleLoad3D(e, index)}
