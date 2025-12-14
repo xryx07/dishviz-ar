@@ -80,7 +80,94 @@ export const Demo = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Mobile: Vertical scroll with full-width cards */}
+        <div className="flex flex-col gap-8 md:hidden">
+          {dishes.map((dish, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5 }}
+              className="bg-background rounded-3xl overflow-hidden shadow-card"
+            >
+              {/* Image/3D Section */}
+              <div className="relative">
+                {loadedModels.has(index) ? (
+                  <div className="w-full aspect-square bg-gradient-to-br from-secondary to-background">
+                    <model-viewer
+                      src={dish.model}
+                      alt={`3D model of ${dish.name}`}
+                      poster={dish.poster}
+                      camera-controls
+                      auto-rotate
+                      shadow-intensity="0.5"
+                      exposure="1"
+                      loading="eager"
+                      reveal="auto"
+                      style={{ width: '100%', height: '100%' }}
+                    />
+                  </div>
+                ) : loadingModels.has(index) ? (
+                  <div className="w-full aspect-square bg-gradient-to-br from-secondary to-background flex flex-col items-center justify-center gap-3">
+                    <Skeleton className="w-24 h-24 rounded-full" />
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <span className="text-sm text-muted-foreground">Loading 3D model...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <img
+                    src={dish.image}
+                    alt={dish.name}
+                    loading="lazy"
+                    className="w-full aspect-square object-cover"
+                  />
+                )}
+                
+                {/* Dish number badge */}
+                <div className="absolute top-4 left-4 bg-primary text-primary-foreground w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+                  {index + 1}
+                </div>
+              </div>
+
+              {/* Info Section */}
+              <div className="p-5 space-y-4">
+                <h3 className="text-xl font-playfair font-bold text-foreground">{dish.name}</h3>
+                
+                <div className="flex gap-3">
+                  {!loadedModels.has(index) && (
+                    <Button 
+                      onClick={(e) => handleLoad3D(e, index)}
+                      variant="outline"
+                      size="default"
+                      className="flex-1 gap-2"
+                      disabled={loadingModels.has(index)}
+                    >
+                      {loadingModels.has(index) ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Box className="w-4 h-4" />
+                      )}
+                      {loadingModels.has(index) ? "Loading..." : "View 3D"}
+                    </Button>
+                  )}
+                  <Button 
+                    onClick={(e) => handleARClick(e, dish.name)}
+                    size="default"
+                    className={`gap-2 ${loadedModels.has(index) ? 'flex-1' : ''}`}
+                  >
+                    <Eye className="w-4 h-4" />
+                    View in AR
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Desktop: Grid layout */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {dishes.map((dish, index) => (
             <motion.div
               key={index}
