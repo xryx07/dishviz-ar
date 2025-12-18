@@ -51,7 +51,6 @@ declare global {
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
-import noodlesImage from "@/assets/dish-noodles.jpg";
 
 // Supabase storage URL for USDZ files
 const STORAGE_URL = 'https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models';
@@ -73,14 +72,6 @@ const getDishData = (dishName: string) => {
       model: '/models/manchurian_dish.glb', 
       iosModel: `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`, 
       poster: manchurianImage 
-    };
-  }
-  // Noodles dish
-  if (name.includes('noodles') || name.includes('chow')) {
-    return { 
-      model: '/models/noodles_dish.glb', 
-      iosModel: `${STORAGE_URL}/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz`, 
-      poster: noodlesImage 
     };
   }
   // Falafel/Kebab dish
