@@ -6,7 +6,6 @@ import { Eye, Box, Loader2 } from "lucide-react";
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
-import noodlesImage from "@/assets/dish-noodles.jpg";
 import { ARPreviewModal, preloadModel } from "@/components/ARPreviewModal";
 
 const dishes = [
@@ -33,14 +32,6 @@ const dishes = [
     image: manchurianImage,
     model: "/models/manchurian_dish.glb",
     poster: manchurianImage,
-  },
-  {
-    name: "Chow Mein Noodles",
-    description: "Stir-fried noodles with fresh vegetables",
-    price: "₹229",
-    image: noodlesImage,
-    model: "/models/noodles_dish.glb",
-    poster: noodlesImage,
   },
 ];
 
