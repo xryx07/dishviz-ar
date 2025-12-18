@@ -1,32 +1,17 @@
 const CACHE_NAME = 'ar-menu-v1';
-const STORAGE_URL = 'https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models';
 
-// Assets to cache immediately
+// Only cache the main page on install - models load on demand
 const PRECACHE_ASSETS = [
   '/',
-  '/models/pasta_dish.glb',
-  '/models/falafel_dish.glb',
-  '/models/manchurian_dish.glb',
-  '/models/noodles_dish.glb',
 ];
 
-// USDZ models to cache on first request
-const USDZ_MODELS = [
-  `${STORAGE_URL}/pasta%2Bdish%2B3d%2Bmodel.usdz`,
-  `${STORAGE_URL}/falafel%2Bballs%2B3d%2Bmodel.usdz`,
-  `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`,
-  `${STORAGE_URL}/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz`,
-];
-
-// Install event - precache GLB models
+// Install event - minimal precache
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Precaching GLB models');
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
-  // Activate immediately
   self.skipWaiting();
 });
 
@@ -135,22 +120,4 @@ self.addEventListener('fetch', (event) => {
         return caches.match(event.request);
       })
   );
-});
-
-// Listen for messages to manually cache USDZ
-self.addEventListener('message', (event) => {
-  if (event.data.type === 'CACHE_USDZ') {
-    caches.open(CACHE_NAME).then((cache) => {
-      USDZ_MODELS.forEach((url) => {
-        fetch(url, { mode: 'cors', credentials: 'omit' })
-          .then((response) => {
-            if (response.ok) {
-              cache.put(url, response);
-              console.log('[SW] Manually cached USDZ:', url);
-            }
-          })
-          .catch(() => {});
-      });
-    });
-  }
 });
