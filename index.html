@@ -14,15 +14,23 @@
     <link rel="preconnect" href="https://boccbckwqkmtmmtsqybv.supabase.co" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://ajax.googleapis.com">
+    <link rel="preconnect" href="https://ajax.googleapis.com" crossorigin>
     
-    <!-- Preload GLB model -->
+    <!-- Preload GLB models for fast 3D preview -->
     <link rel="preload" href="/models/pasta_dish.glb" as="fetch" crossorigin>
+    <link rel="preload" href="/models/falafel_dish.glb" as="fetch" crossorigin>
+    <link rel="preload" href="/models/manchurian_dish.glb" as="fetch" crossorigin>
+    <link rel="preload" href="/models/noodles_dish.glb" as="fetch" crossorigin>
     
-    <!-- Preload USDZ models for iOS AR (high priority) -->
+    <!-- Preload USDZ models for iOS AR -->
     <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/pasta%2Bdish%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
     <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/falafel%2Bballs%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
     <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/braised%2Bpork%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
     <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
+    
+    <!-- Preload model-viewer for faster AR -->
+    <link rel="modulepreload" href="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js">
     
     <meta name="author" content="Lovable" />
 
