@@ -9,10 +9,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/models/pasta_dish.glb" as="fetch" crossorigin>
+    <!-- DNS prefetch and preconnect for faster loading -->
     <link rel="dns-prefetch" href="https://boccbckwqkmtmmtsqybv.supabase.co">
     <link rel="preconnect" href="https://boccbckwqkmtmmtsqybv.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    
+    <!-- Preload GLB model -->
+    <link rel="preload" href="/models/pasta_dish.glb" as="fetch" crossorigin>
+    
+    <!-- Preload USDZ models for iOS AR (high priority) -->
+    <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/pasta%2Bdish%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
+    <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/falafel%2Bballs%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
+    <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/braised%2Bpork%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
+    <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
+    
     <meta name="author" content="Lovable" />
 
     <meta property="og:title" content="AR Menu - See Before You Order" />
