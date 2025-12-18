@@ -7,7 +7,7 @@ import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
 import noodlesImage from "@/assets/dish-noodles.jpg";
-import { ARPreviewModal } from "@/components/ARPreviewModal";
+import { ARPreviewModal, preloadModel } from "@/components/ARPreviewModal";
 
 const dishes = [
   {
@@ -56,10 +56,14 @@ export const Demo = () => {
     setIsModalOpen(true);
   };
 
-  const handleLoad3D = (e: React.MouseEvent, index: number) => {
+  const handleLoad3D = (e: React.MouseEvent, index: number, modelPath: string) => {
     e.stopPropagation();
     setLoadingModels(prev => new Set([...prev, index]));
-    // Simulate minimum loading time for smooth UX
+    
+    // Preload the specific model
+    preloadModel(modelPath);
+    
+    // Short delay for smooth UX
     setTimeout(() => {
       setLoadedModels(prev => new Set([...prev, index]));
       setLoadingModels(prev => {
@@ -67,7 +71,7 @@ export const Demo = () => {
         newSet.delete(index);
         return newSet;
       });
-    }, 500);
+    }, 300);
   };
 
   return (
@@ -150,7 +154,7 @@ export const Demo = () => {
                 <div className="flex gap-3 pt-1">
                   {!loadedModels.has(index) && (
                     <Button 
-                      onClick={(e) => handleLoad3D(e, index)}
+                      onClick={(e) => handleLoad3D(e, index, dish.model)}
                       variant="outline"
                       size="default"
                       className="flex-1 gap-2"
@@ -246,7 +250,7 @@ export const Demo = () => {
                 <div className="flex gap-2 justify-center pt-1">
                   {!loadedModels.has(index) && (
                     <Button 
-                      onClick={(e) => handleLoad3D(e, index)}
+                      onClick={(e) => handleLoad3D(e, index, dish.model)}
                       variant="outline"
                       size="sm"
                       className="gap-2"

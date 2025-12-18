@@ -99,88 +99,31 @@ const getDishData = (dishName: string) => {
   };
 };
 
-// GLB models for 3D preview
-const glbModels = [
-  '/models/falafel_dish.glb',
-  '/models/pasta_dish.glb',
-  '/models/manchurian_dish.glb',
-  '/models/noodles_dish.glb'
-];
-
-// USDZ models for iOS AR
-const usdzModels = [
-  `${STORAGE_URL}/pasta%2Bdish%2B3d%2Bmodel.usdz`,
-  `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`,
-  `${STORAGE_URL}/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz`,
-  `${STORAGE_URL}/falafel%2Bballs%2B3d%2Bmodel.usdz`
-];
-
-// Aggressive preloading for both platforms
+// Model cache - only load when needed
 const modelCache = new Map<string, boolean>();
 
-const preloadModels = () => {
-  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  const isAndroid = /Android/i.test(navigator.userAgent);
+// Preload a single model on demand
+export const preloadModel = (modelPath: string) => {
+  if (modelCache.has(modelPath)) return;
   
-  // Preload GLB models immediately for all platforms
-  glbModels.forEach(model => {
-    if (!modelCache.has(model)) {
-      // Add preload link for high priority
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.href = model;
-      link.as = 'fetch';
-      link.crossOrigin = 'anonymous';
-      document.head.appendChild(link);
-      
-      // Also fetch to cache
-      fetch(model, { cache: 'force-cache' })
-        .then(() => modelCache.set(model, true))
-        .catch(() => {});
-    }
-  });
-  
-  // For iOS - preload USDZ with high priority
-  if (isIOS) {
-    usdzModels.forEach(model => {
-      if (!modelCache.has(model)) {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.href = model;
-        link.as = 'fetch';
-        link.crossOrigin = 'anonymous';
-        document.head.appendChild(link);
-        modelCache.set(model, true);
-        
-        // Fetch to browser cache
-        fetch(model, { 
-          cache: 'force-cache',
-          mode: 'cors',
-          credentials: 'omit'
-        }).catch(() => {});
-      }
-    });
-  }
-  
-  // For Android - preload GLB models with Scene Viewer intent preparation
-  if (isAndroid) {
-    glbModels.forEach(model => {
-      // Create hidden anchor for Scene Viewer preparation
-      const fullUrl = `${window.location.origin}${model}`;
-      fetch(fullUrl, { cache: 'force-cache' }).catch(() => {});
-    });
-  }
+  modelCache.set(modelPath, true);
+  fetch(modelPath, { cache: 'force-cache' }).catch(() => {});
 };
 
-// Start preloading immediately on script load
-if (typeof window !== 'undefined') {
-  // Run immediately, don't wait
-  preloadModels();
-  // Also run after DOM is ready for any missed models
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', preloadModels);
+// Preload USDZ for iOS when AR modal opens
+const preloadUSDZ = (usdzUrl: string) => {
+  if (modelCache.has(usdzUrl)) return;
+  
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isIOS) {
+    modelCache.set(usdzUrl, true);
+    fetch(usdzUrl, { 
+      cache: 'force-cache',
+      mode: 'cors',
+      credentials: 'omit'
+    }).catch(() => {});
   }
-}
+};
 
 export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProps) => {
   const [isLoading, setIsLoading] = useState(true);

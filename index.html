@@ -9,28 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- DNS prefetch and preconnect for faster loading -->
+    <!-- DNS prefetch for faster connections -->
     <link rel="dns-prefetch" href="https://boccbckwqkmtmmtsqybv.supabase.co">
-    <link rel="preconnect" href="https://boccbckwqkmtmmtsqybv.supabase.co" crossorigin>
-    <link rel="preconnect" href="https://unpkg.com" crossorigin>
-    <link rel="dns-prefetch" href="https://unpkg.com">
     <link rel="dns-prefetch" href="https://ajax.googleapis.com">
-    <link rel="preconnect" href="https://ajax.googleapis.com" crossorigin>
-    
-    <!-- Preload GLB models for fast 3D preview -->
-    <link rel="preload" href="/models/pasta_dish.glb" as="fetch" crossorigin>
-    <link rel="preload" href="/models/falafel_dish.glb" as="fetch" crossorigin>
-    <link rel="preload" href="/models/manchurian_dish.glb" as="fetch" crossorigin>
-    <link rel="preload" href="/models/noodles_dish.glb" as="fetch" crossorigin>
-    
-    <!-- Preload USDZ models for iOS AR -->
-    <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/pasta%2Bdish%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
-    <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/falafel%2Bballs%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
-    <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/braised%2Bpork%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
-    <link rel="preload" href="https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz" as="fetch" crossorigin>
-    
-    <!-- Preload model-viewer for faster AR -->
-    <link rel="modulepreload" href="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js">
     
     <meta name="author" content="Lovable" />
 
@@ -46,8 +27,8 @@
 
   <body>
     <div id="root"></div>
-    <!-- Model Viewer - load before app -->
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+    <!-- Model Viewer - load async -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" async></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
