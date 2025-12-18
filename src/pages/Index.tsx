@@ -11,10 +11,12 @@ import { Footer } from "@/components/Footer";
 import { FloatingContactButton } from "@/components/FloatingContactButton";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AIChatButton } from "@/components/AIChatButton";
+import { SafariBanner } from "@/components/SafariBanner";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SafariBanner />
       <Navigation />
       <main>
         <Hero />
