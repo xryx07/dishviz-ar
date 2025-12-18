@@ -99,10 +99,43 @@ const getDishData = (dishName: string) => {
   };
 };
 
-// Preload models immediately (GLB for web, USDZ for iOS)
+// USDZ models for iOS AR - preload aggressively
+const usdzModels = [
+  `${STORAGE_URL}/pasta%2Bdish%2B3d%2Bmodel.usdz`,
+  `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`,
+  `${STORAGE_URL}/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz`,
+  `${STORAGE_URL}/falafel%2Bballs%2B3d%2Bmodel.usdz`
+];
+
+// Preload immediately on page load for iOS
 const modelCache = new Map<string, boolean>();
 const preloadModels = () => {
-  // GLB models for web
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  
+  // For iOS - preload USDZ immediately with high priority
+  if (isIOS) {
+    usdzModels.forEach(model => {
+      if (!modelCache.has(model)) {
+        // Use preload for high priority
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.href = model;
+        link.as = 'fetch';
+        link.crossOrigin = 'anonymous';
+        document.head.appendChild(link);
+        modelCache.set(model, true);
+        
+        // Also start fetching to cache
+        fetch(model, { 
+          cache: 'force-cache',
+          mode: 'cors',
+          credentials: 'omit'
+        }).catch(() => {});
+      }
+    });
+  }
+  
+  // GLB models for web - use prefetch
   const glbModels = [
     '/models/falafel_dish.glb',
     '/models/pasta_dish.glb',
@@ -110,15 +143,6 @@ const preloadModels = () => {
     '/models/noodles_dish.glb'
   ];
   
-  // USDZ models for iOS AR
-  const usdzModels = [
-    `${STORAGE_URL}/pasta%2Bdish%2B3d%2Bmodel.usdz`,
-    `${STORAGE_URL}/braised%2Bpork%2B3d%2Bmodel.usdz`,
-    `${STORAGE_URL}/stir-fried%2Bnoodles%2B3d%2Bmodel.usdz`,
-    `${STORAGE_URL}/falafel%2Bballs%2B3d%2Bmodel.usdz`
-  ];
-  
-  // Preload GLB models
   glbModels.forEach(model => {
     if (!modelCache.has(model)) {
       fetch(model, { cache: 'force-cache' })
@@ -126,26 +150,11 @@ const preloadModels = () => {
         .catch(() => {});
     }
   });
-  
-  // Preload USDZ on iOS devices using link prefetch
-  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    usdzModels.forEach(model => {
-      if (!modelCache.has(model)) {
-        const link = document.createElement('link');
-        link.rel = 'prefetch';
-        link.href = model;
-        link.as = 'fetch';
-        link.crossOrigin = 'anonymous';
-        document.head.appendChild(link);
-        modelCache.set(model, true);
-      }
-    });
-  }
 };
 
+// Start preloading immediately
 if (typeof window !== 'undefined') {
-  // Delay preload slightly to not block initial render
-  setTimeout(preloadModels, 1000);
+  preloadModels();
 }
 
 export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProps) => {
@@ -267,19 +276,19 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       }
     }
 
-    // Simulate progress if real progress events aren't firing
+    // Simulate progress faster
     progressInterval = setInterval(() => {
       setProgress(prev => {
-        if (prev < 90) return prev + Math.random() * 15;
+        if (prev < 90) return prev + Math.random() * 20;
         return prev;
       });
-    }, 300);
+    }, 200);
 
-    // Fallback: hide loading after 5 seconds even if not fully loaded
+    // Faster fallback: hide loading after 3 seconds
     fallbackTimeout = setTimeout(() => {
       setIsLoading(false);
       setProgress(100);
-    }, 5000);
+    }, 3000);
 
     return () => {
       if (element) {
