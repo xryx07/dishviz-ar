@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -6,7 +6,7 @@ import { Eye, Box, Loader2 } from "lucide-react";
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
-import { ARPreviewModal, preloadModel } from "@/components/ARPreviewModal";
+import { ARPreviewModal, preloadModel, preloadAllModels } from "@/components/ARPreviewModal";
 
 const dishes = [
   {
@@ -40,6 +40,14 @@ export const Demo = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadedModels, setLoadedModels] = useState<Set<number>>(new Set());
   const [loadingModels, setLoadingModels] = useState<Set<number>>(new Set());
+
+  // Preload all models when section becomes visible
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      preloadAllModels();
+    }, 1000); // Start preloading after 1s for better initial page load
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleARClick = (e: React.MouseEvent, dishName: string) => {
     e.stopPropagation();
@@ -93,6 +101,7 @@ export const Demo = () => {
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5 }}
               className="bg-background rounded-3xl overflow-hidden shadow-card"
+              onMouseEnter={() => preloadModel(dish.model)}
             >
               {/* Image/3D Section */}
               <div className="relative">
@@ -183,6 +192,7 @@ export const Demo = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="group"
+              onMouseEnter={() => preloadModel(dish.model)}
             >
               {/* Image Card */}
               <div className="relative rounded-2xl overflow-hidden shadow-card hover:shadow-soft transition-smooth bg-background">

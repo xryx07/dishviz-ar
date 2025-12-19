@@ -90,29 +90,44 @@ const getDishData = (dishName: string) => {
   };
 };
 
-// Model cache - only load when needed
-const modelCache = new Map<string, boolean>();
+// Model cache with preloaded data
+const modelCache = new Map<string, Promise<void>>();
 
-// Preload a single model on demand
+// Preload a single model with high priority
 export const preloadModel = (modelPath: string) => {
-  if (modelCache.has(modelPath)) return;
+  if (modelCache.has(modelPath)) return modelCache.get(modelPath);
   
-  modelCache.set(modelPath, true);
-  fetch(modelPath, { cache: 'force-cache' }).catch(() => {});
+  const promise = fetch(modelPath, { 
+    cache: 'force-cache',
+    priority: 'high' as RequestPriority
+  }).then(() => {}).catch(() => {});
+  
+  modelCache.set(modelPath, promise);
+  return promise;
 };
 
-// Preload USDZ for iOS when AR modal opens
+// Preload all models immediately for faster access
+export const preloadAllModels = () => {
+  const models = [
+    '/models/pasta_dish.glb',
+    '/models/manchurian_dish.glb',
+    '/models/falafel_dish.glb',
+  ];
+  models.forEach(m => preloadModel(m));
+};
+
+// Preload USDZ for iOS
 const preloadUSDZ = (usdzUrl: string) => {
   if (modelCache.has(usdzUrl)) return;
   
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
   if (isIOS) {
-    modelCache.set(usdzUrl, true);
-    fetch(usdzUrl, { 
+    const promise = fetch(usdzUrl, { 
       cache: 'force-cache',
       mode: 'cors',
       credentials: 'omit'
-    }).catch(() => {});
+    }).then(() => {}).catch(() => {});
+    modelCache.set(usdzUrl, promise);
   }
 };
 
@@ -235,19 +250,19 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       }
     }
 
-    // Simulate progress faster
+    // Simulate progress faster - models should be cached
     progressInterval = setInterval(() => {
       setProgress(prev => {
-        if (prev < 90) return prev + Math.random() * 20;
+        if (prev < 90) return prev + Math.random() * 30;
         return prev;
       });
-    }, 200);
+    }, 100);
 
-    // Fast fallback: hide loading after 2 seconds (models are preloaded)
+    // Fast fallback: hide loading after 800ms (models are preloaded)
     fallbackTimeout = setTimeout(() => {
       setIsLoading(false);
       setProgress(100);
-    }, 2000);
+    }, 800);
 
     return () => {
       if (element) {
