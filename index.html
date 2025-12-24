@@ -31,7 +31,11 @@
   <body>
     <div id="root"></div>
     <!-- Model Viewer - load async -->
-    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" async></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js" async></script>
+  <!-- Draco decoder for compressed GLB models -->
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js';
+  </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
