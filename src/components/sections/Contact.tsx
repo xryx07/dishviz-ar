@@ -219,8 +219,8 @@ export const Contact = () => {
                 <h4 className="text-sm font-semibold text-foreground mb-2 sm:mb-3 uppercase tracking-wide text-center sm:text-left">Follow Us</h4>
                 <div className="flex justify-center sm:justify-start gap-3 sm:gap-4">
                   <a 
-                    href="https://www.linkedin.com/in/dish-viz-59957639b" 
-                    target="_blank" 
+                    href="https://www.linkedin.com/in/dishviz-ar-3768aa3a2" 
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="p-2.5 sm:p-2 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
                     aria-label="LinkedIn"
