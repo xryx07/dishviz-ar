@@ -24,8 +24,8 @@ export const Hero = () => {
           >
             <div className="relative mx-auto w-full h-[300px] sm:h-[400px] lg:h-[500px] rounded-3xl overflow-hidden bg-gradient-to-br from-secondary to-background shadow-soft">
               <model-viewer
-                src="/models/pasta_dish.glb"
-                alt="3D pasta dish preview"
+                src="/models/falafel_dish.glb"
+                alt="3D falafel dish preview"
                 camera-controls
                 auto-rotate
                 shadow-intensity="1"
