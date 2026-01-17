@@ -1,13 +1,30 @@
-import { useState, useRef, useEffect } from "react";
-import { Bot, X, Send, Loader2, Sparkles, MessageSquare } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Bot, X, Send, Loader2, Sparkles, MessageSquare, Trash2, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Simple markdown-like formatting
+const formatMessage = (content: string) => {
+  if (!content) return content;
+  
+  // Bold text
+  let formatted = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  // Italic text
+  formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  // Bullet points
+  formatted = formatted.replace(/^- (.+)$/gm, '• $1');
+  // Line breaks
+  formatted = formatted.replace(/\n/g, '<br/>');
+  
+  return formatted;
+};
+
 interface Message {
   role: "user" | "assistant";
+  id: string;
   content: string;
   timestamp: Date;
 }
@@ -43,6 +60,7 @@ export const AIChatButton = () => {
 
     const userMessage: Message = { 
       role: "user", 
+      id: crypto.randomUUID(),
       content: input.trim(),
       timestamp: new Date()
     };
@@ -94,7 +112,8 @@ export const AIChatButton = () => {
       let textBuffer = "";
 
       // Add empty assistant message
-      setMessages((prev) => [...prev, { role: "assistant", content: "", timestamp: new Date() }]);
+      const assistantId = crypto.randomUUID();
+      setMessages((prev) => [...prev, { role: "assistant", id: assistantId, content: "", timestamp: new Date() }]);
       setIsTyping(false);
 
       while (true) {
@@ -157,11 +176,28 @@ export const AIChatButton = () => {
     { icon: "📱", text: "How does AR menu work?" },
     { icon: "💰", text: "What are the pricing plans?" },
     { icon: "🚀", text: "How to get started?" },
+    { icon: "✨", text: "What makes DishViz unique?" },
   ];
 
   const handleQuickReply = (question: string) => {
     setInput(question);
   };
+
+  const clearConversation = useCallback(() => {
+    setMessages([]);
+    toast({
+      title: "Conversation cleared",
+      description: "Start a fresh conversation!",
+    });
+  }, [toast]);
+
+  const copyMessage = useCallback((content: string, msgId: string) => {
+    navigator.clipboard.writeText(content);
+    setCopiedId(msgId);
+    setTimeout(() => setCopiedId(null), 2000);
+  }, []);
+
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (input && quickReplies.some(q => q.text === input)) {
@@ -226,17 +262,30 @@ export const AIChatButton = () => {
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-primary/80 p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-primary-foreground/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <Sparkles size={24} className="text-primary-foreground" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary-foreground text-lg">DishViz AI</h3>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <p className="text-xs text-primary-foreground/80">Always online</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-primary-foreground/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <Sparkles size={24} className="text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-primary-foreground text-lg">DishViz AI</h3>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                      <p className="text-xs text-primary-foreground/80">Powered by Gemini 3</p>
+                    </div>
                   </div>
                 </div>
+                {messages.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearConversation}
+                    className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+                    title="Clear conversation"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -286,7 +335,7 @@ export const AIChatButton = () => {
                             <Sparkles size={14} className="text-primary" />
                           </div>
                         )}
-                        <div>
+                        <div className="group relative">
                           <div
                             className={`rounded-2xl px-4 py-2.5 text-sm ${
                               msg.role === "user"
@@ -294,7 +343,16 @@ export const AIChatButton = () => {
                                 : "bg-muted text-foreground rounded-bl-md"
                             }`}
                           >
-                            {msg.content || (
+                            {msg.content ? (
+                              msg.role === "assistant" ? (
+                                <div 
+                                  className="prose prose-sm max-w-none dark:prose-invert [&>strong]:font-semibold [&>em]:italic"
+                                  dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
+                                />
+                              ) : (
+                                msg.content
+                              )
+                            ) : (
                               <div className="flex items-center gap-1">
                                 <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                                 <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -302,9 +360,24 @@ export const AIChatButton = () => {
                               </div>
                             )}
                           </div>
-                          <p className={`text-[10px] text-muted-foreground mt-1 ${msg.role === "user" ? "text-right" : ""}`}>
-                            {formatTime(msg.timestamp)}
-                          </p>
+                          <div className={`flex items-center gap-2 mt-1 ${msg.role === "user" ? "justify-end" : ""}`}>
+                            <p className="text-[10px] text-muted-foreground">
+                              {formatTime(msg.timestamp)}
+                            </p>
+                            {msg.role === "assistant" && msg.content && (
+                              <button
+                                onClick={() => copyMessage(msg.content, msg.id)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                                title="Copy message"
+                              >
+                                {copiedId === msg.id ? (
+                                  <Check size={12} className="text-green-500" />
+                                ) : (
+                                  <Copy size={12} />
+                                )}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </motion.div>
