@@ -1,29 +1,30 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
 export const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu when screen resizes to desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsMobileMenuOpen(false);
-      }
+      if (window.innerWidth >= 768) setIsMobileMenuOpen(false);
     };
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -40,66 +41,82 @@ export const Navigation = () => {
   ];
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-smooth ${
-        isScrolled
-          ? "bg-primary shadow-soft"
-          : "bg-primary"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          <div className="flex-shrink-0">
+    <>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-smooth ${
+          isScrolled ? "glass" : "bg-transparent"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Hamburger - left on mobile */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-foreground hover:text-foreground/70 transition-smooth"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+
+            {/* Desktop nav links - left */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navLinks.map((link) => (
+                <button
+                  key={link.id}
+                  onClick={() => scrollToSection(link.id)}
+                  className="text-foreground/70 hover:text-foreground transition-smooth text-sm tracking-widest uppercase font-inter"
+                >
+                  {link.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Logo - right */}
             <button
               onClick={() => scrollToSection('hero')}
-              className="text-xl md:text-2xl font-playfair font-bold text-primary-foreground"
+              className="text-xl md:text-2xl font-playfair font-bold text-foreground tracking-wider"
             >
               DishViz
             </button>
           </div>
+        </div>
+      </nav>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <button
-                key={link.id}
-                onClick={() => scrollToSection(link.id)}
-                className="text-primary-foreground hover:text-primary-foreground/80 transition-smooth text-base font-medium"
-              >
-                {link.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-primary-foreground hover:text-primary-foreground/80 transition-smooth"
-            aria-label="Toggle menu"
+      {/* Full-screen mobile menu overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="fixed inset-0 z-[60] bg-background flex flex-col items-center justify-center"
           >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-          isMobileMenuOpen ? "max-h-80 opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div className="bg-primary border-t border-primary-foreground/10 px-4 py-4 space-y-1">
-          {navLinks.map((link) => (
             <button
-              key={link.id}
-              onClick={() => scrollToSection(link.id)}
-              className="block w-full text-left px-4 py-3 text-primary-foreground hover:bg-primary-foreground/10 rounded-lg transition-smooth text-base font-medium"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute top-4 left-4 p-2 text-foreground"
+              aria-label="Close menu"
             >
-              {link.label}
+              <X size={28} />
             </button>
-          ))}
-        </div>
-      </div>
-    </nav>
+
+            <div className="space-y-8 text-center">
+              {navLinks.map((link, i) => (
+                <motion.button
+                  key={link.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  onClick={() => scrollToSection(link.id)}
+                  className="block text-3xl font-playfair text-foreground hover:text-foreground/70 transition-smooth tracking-wider"
+                >
+                  {link.label}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
