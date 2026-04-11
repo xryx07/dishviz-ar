@@ -3,35 +3,39 @@ import { Button } from "@/components/ui/button";
 
 export const Pricing = () => {
   const scrollToContact = () => {
-    const element = document.getElementById('contact');
-    element?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <section id="pricing" className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8 bg-muted/30">
-      <div className="max-w-4xl mx-auto text-center">
+    <section id="pricing" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-background">
+      <div className="max-w-3xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8 }}
+          className="space-y-8"
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4">
+          <p className="text-xs font-inter text-muted-foreground uppercase tracking-[0.3em]">
             Pricing
+          </p>
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-playfair font-bold text-foreground">
+            Tailored to Your Needs
           </h2>
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-6 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Our pricing is customized based on your restaurant's needs, including the number of dishes and locations.
           </p>
-          <p className="text-base sm:text-lg text-foreground mb-8">
-            Get a personalized quote tailored to your business.
-          </p>
-          <Button
-            className="hero-gradient shadow-glow text-lg px-8"
-            size="lg"
+
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
             onClick={scrollToContact}
+            className="w-36 h-36 sm:w-40 sm:h-40 rounded-full border border-foreground/30 flex items-center justify-center text-foreground font-playfair text-base tracking-widest hover:bg-foreground/10 transition-smooth cursor-pointer mx-auto"
           >
-            Contact Us for Pricing
-          </Button>
+            Get a Quote
+          </motion.button>
         </motion.div>
       </div>
     </section>
