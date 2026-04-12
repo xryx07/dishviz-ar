@@ -7,6 +7,7 @@ import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
 import { ARPreviewModal, preloadModel, preloadAllModels } from "@/components/ARPreviewModal";
+import { TextRevealHeading, ParallaxImage, StaggerContainer, StaggerItem } from "@/components/TextReveal";
 
 const dishes = [
   {
@@ -69,36 +70,128 @@ export const Demo = () => {
   return (
     <section id="demo" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-secondary">
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16 sm:mb-20"
-        >
-          <p className="text-xs font-inter text-muted-foreground uppercase tracking-[0.3em] mb-4">
+        <div className="text-center mb-16 sm:mb-20">
+          <motion.p
+            initial={{ opacity: 0, letterSpacing: "0.1em" }}
+            whileInView={{ opacity: 1, letterSpacing: "0.3em" }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+            className="text-xs font-inter text-muted-foreground uppercase mb-4"
+          >
             Our Work
-          </p>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-playfair font-bold text-foreground">
+          </motion.p>
+          <TextRevealHeading className="text-4xl sm:text-5xl lg:text-6xl font-playfair font-bold text-foreground">
             Gallery
-          </h2>
-        </motion.div>
+          </TextRevealHeading>
+        </div>
 
         {/* Mobile cards */}
-        <div className="flex flex-col gap-8 md:hidden">
+        <StaggerContainer className="flex flex-col gap-8 md:hidden" staggerDelay={0.15}>
           {dishes.map((dish, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5 }}
-              className="glass rounded-2xl overflow-hidden glow-border"
-              onMouseEnter={() => preloadModel(dish.model)}
-            >
-              <div className="relative">
-                {loadedModels.has(index) ? (
-                  <div className="w-full aspect-square bg-background/50">
+            <StaggerItem key={index}>
+              <div
+                className="glass rounded-2xl overflow-hidden glow-border"
+                onMouseEnter={() => preloadModel(dish.model)}
+              >
+                <div className="relative">
+                  {loadedModels.has(index) ? (
+                    <div className="w-full aspect-square bg-background/50">
+                      <model-viewer
+                        src={dish.model}
+                        alt={`3D model of ${dish.name}`}
+                        poster={dish.poster}
+                        camera-controls
+                        auto-rotate
+                        shadow-intensity="0.5"
+                        exposure="1"
+                        loading="eager"
+                        reveal="auto"
+                        style={{ width: '100%', height: '100%' }}
+                      />
+                    </div>
+                  ) : loadingModels.has(index) ? (
+                    <div className="w-full aspect-square bg-background/50 flex flex-col items-center justify-center gap-3">
+                      <Skeleton className="w-24 h-24 rounded-full bg-muted" />
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-foreground" />
+                        <span className="text-sm text-muted-foreground">Loading 3D model...</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <ParallaxImage src={dish.image} alt={dish.name} className="w-full aspect-square" />
+                  )}
+                </div>
+
+                <div className="p-5 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-xl font-playfair font-bold text-foreground">{dish.name}</h3>
+                    <span className="text-lg font-bold text-accent whitespace-nowrap">{dish.price}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{dish.description}</p>
+                  <div className="flex gap-3 pt-1">
+                    {!loadedModels.has(index) && (
+                      <Button
+                        onClick={(e) => handleLoad3D(e, index, dish.model)}
+                        variant="outline"
+                        size="default"
+                        className="flex-1 gap-2 border-foreground/20 text-foreground hover:bg-foreground/10"
+                        disabled={loadingModels.has(index)}
+                      >
+                        {loadingModels.has(index) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Box className="w-4 h-4" />}
+                        {loadingModels.has(index) ? "Loading..." : "View 3D"}
+                      </Button>
+                    )}
+                    <Button
+                      onClick={(e) => handleARClick(e, dish.name)}
+                      size="default"
+                      className={`gap-2 bg-foreground text-background hover:bg-foreground/80 ${loadedModels.has(index) ? 'flex-1' : ''}`}
+                    >
+                      <Eye className="w-4 h-4" />
+                      View in AR
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </StaggerItem>
+          ))}
+        </StaggerContainer>
+
+        {/* Desktop grid */}
+        <StaggerContainer className="hidden md:grid md:grid-cols-3 gap-8" staggerDelay={0.15}>
+          {dishes.map((dish, index) => (
+            <StaggerItem key={index}>
+              <motion.div
+                className="group"
+                onMouseEnter={() => preloadModel(dish.model)}
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="relative rounded-2xl overflow-hidden glow-border">
+                  <ParallaxImage src={dish.image} alt={dish.name} className="w-full aspect-square" />
+                </div>
+
+                {loadingModels.has(index) && !loadedModels.has(index) && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 200 }}
+                    className="mt-3 rounded-2xl overflow-hidden glass"
+                  >
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+                      <Skeleton className="w-24 h-24 rounded-full bg-muted" />
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-foreground" />
+                        <span className="text-sm text-muted-foreground">Loading 3D model...</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {loadedModels.has(index) && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 200 }}
+                    className="mt-3 rounded-2xl overflow-hidden glass"
+                  >
                     <model-viewer
                       src={dish.model}
                       alt={`3D model of ${dish.name}`}
@@ -109,138 +202,42 @@ export const Demo = () => {
                       exposure="1"
                       loading="eager"
                       reveal="auto"
-                      style={{ width: '100%', height: '100%' }}
+                      style={{ width: '100%', height: '200px' }}
                     />
-                  </div>
-                ) : loadingModels.has(index) ? (
-                  <div className="w-full aspect-square bg-background/50 flex flex-col items-center justify-center gap-3">
-                    <Skeleton className="w-24 h-24 rounded-full bg-muted" />
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-foreground" />
-                      <span className="text-sm text-muted-foreground">Loading 3D model...</span>
-                    </div>
-                  </div>
-                ) : (
-                  <img src={dish.image} alt={dish.name} loading="lazy" className="w-full aspect-square object-cover" />
+                  </motion.div>
                 )}
-              </div>
 
-              <div className="p-5 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-xl font-playfair font-bold text-foreground">{dish.name}</h3>
-                  <span className="text-lg font-bold text-accent whitespace-nowrap">{dish.price}</span>
-                </div>
-                <p className="text-sm text-muted-foreground">{dish.description}</p>
-                <div className="flex gap-3 pt-1">
-                  {!loadedModels.has(index) && (
+                <div className="mt-4 text-center space-y-2">
+                  <p className="text-foreground font-playfair font-bold text-lg">{dish.name}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{dish.description}</p>
+                  <p className="text-accent font-bold">{dish.price}</p>
+                  <div className="flex gap-2 justify-center pt-1">
+                    {!loadedModels.has(index) && (
+                      <Button
+                        onClick={(e) => handleLoad3D(e, index, dish.model)}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 border-foreground/20 text-foreground hover:bg-foreground/10"
+                        disabled={loadingModels.has(index)}
+                      >
+                        {loadingModels.has(index) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Box className="w-4 h-4" />}
+                        {loadingModels.has(index) ? "Loading..." : "View 3D"}
+                      </Button>
+                    )}
                     <Button
-                      onClick={(e) => handleLoad3D(e, index, dish.model)}
-                      variant="outline"
-                      size="default"
-                      className="flex-1 gap-2 border-foreground/20 text-foreground hover:bg-foreground/10"
-                      disabled={loadingModels.has(index)}
-                    >
-                      {loadingModels.has(index) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Box className="w-4 h-4" />}
-                      {loadingModels.has(index) ? "Loading..." : "View 3D"}
-                    </Button>
-                  )}
-                  <Button
-                    onClick={(e) => handleARClick(e, dish.name)}
-                    size="default"
-                    className={`gap-2 bg-foreground text-background hover:bg-foreground/80 ${loadedModels.has(index) ? 'flex-1' : ''}`}
-                  >
-                    <Eye className="w-4 h-4" />
-                    View in AR
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Desktop grid */}
-        <div className="hidden md:grid md:grid-cols-3 gap-8">
-          {dishes.map((dish, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
-              className="group"
-              onMouseEnter={() => preloadModel(dish.model)}
-            >
-              <div className="relative rounded-2xl overflow-hidden glow-border">
-                <img src={dish.image} alt={dish.name} loading="lazy" className="w-full aspect-square object-cover" />
-              </div>
-
-              {loadingModels.has(index) && !loadedModels.has(index) && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 200 }}
-                  className="mt-3 rounded-2xl overflow-hidden glass"
-                >
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-3">
-                    <Skeleton className="w-24 h-24 rounded-full bg-muted" />
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-foreground" />
-                      <span className="text-sm text-muted-foreground">Loading 3D model...</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {loadedModels.has(index) && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 200 }}
-                  className="mt-3 rounded-2xl overflow-hidden glass"
-                >
-                  <model-viewer
-                    src={dish.model}
-                    alt={`3D model of ${dish.name}`}
-                    poster={dish.poster}
-                    camera-controls
-                    auto-rotate
-                    shadow-intensity="0.5"
-                    exposure="1"
-                    loading="eager"
-                    reveal="auto"
-                    style={{ width: '100%', height: '200px' }}
-                  />
-                </motion.div>
-              )}
-
-              <div className="mt-4 text-center space-y-2">
-                <p className="text-foreground font-playfair font-bold text-lg">{dish.name}</p>
-                <p className="text-xs text-muted-foreground line-clamp-2">{dish.description}</p>
-                <p className="text-accent font-bold">{dish.price}</p>
-                <div className="flex gap-2 justify-center pt-1">
-                  {!loadedModels.has(index) && (
-                    <Button
-                      onClick={(e) => handleLoad3D(e, index, dish.model)}
-                      variant="outline"
+                      onClick={(e) => handleARClick(e, dish.name)}
                       size="sm"
-                      className="gap-2 border-foreground/20 text-foreground hover:bg-foreground/10"
-                      disabled={loadingModels.has(index)}
+                      className="gap-2 bg-foreground text-background hover:bg-foreground/80"
                     >
-                      {loadingModels.has(index) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Box className="w-4 h-4" />}
-                      {loadingModels.has(index) ? "Loading..." : "View 3D"}
+                      <Eye className="w-4 h-4" />
+                      View in AR
                     </Button>
-                  )}
-                  <Button
-                    onClick={(e) => handleARClick(e, dish.name)}
-                    size="sm"
-                    className="gap-2 bg-foreground text-background hover:bg-foreground/80"
-                  >
-                    <Eye className="w-4 h-4" />
-                    View in AR
-                  </Button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
 
       {selectedDish && (

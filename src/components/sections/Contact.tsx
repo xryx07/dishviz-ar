@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Linkedin, Instagram, Twitter } from "lucide-react";
+import { TextRevealHeading, RevealLine, StaggerContainer, StaggerItem } from "@/components/TextReveal";
 
 export const Contact = () => {
   const { toast } = useToast();
@@ -38,27 +39,27 @@ export const Contact = () => {
   return (
     <section id="contact" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-background">
       <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <p className="text-xs font-inter text-muted-foreground uppercase tracking-[0.3em] mb-4">
+        <div className="text-center mb-16">
+          <motion.p
+            initial={{ opacity: 0, letterSpacing: "0.1em" }}
+            whileInView={{ opacity: 1, letterSpacing: "0.3em" }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+            className="text-xs font-inter text-muted-foreground uppercase mb-4"
+          >
             Reach Out
-          </p>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-playfair font-bold text-foreground">
+          </motion.p>
+          <TextRevealHeading className="text-4xl sm:text-5xl lg:text-6xl font-playfair font-bold text-foreground">
             Contact Us
-          </h2>
-        </motion.div>
+          </TextRevealHeading>
+        </div>
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: -40, filter: "blur(6px)" }}
+            whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
           >
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-6">
@@ -108,10 +109,10 @@ export const Contact = () => {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: 40, filter: "blur(6px)" }}
+            whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             className="lg:pt-8 space-y-8"
           >
             <div>
@@ -120,39 +121,47 @@ export const Contact = () => {
                 Need answers right now? Our team is ready to help with your questions about using the technology.
               </p>
             </div>
-            <div className="space-y-6">
-              <div className="border-t border-border pt-6">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Email</p>
-                <a href="mailto:dishviz.ar@gmail.com" className="text-foreground hover:text-accent transition-smooth">
-                  dishviz.ar@gmail.com
-                </a>
-              </div>
-              <div className="border-t border-border pt-6">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Phone</p>
-                <p className="text-foreground">+91 98765 xxxxx</p>
-              </div>
-              <div className="border-t border-border pt-6">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Location</p>
-                <p className="text-foreground">India</p>
-              </div>
-              <div className="border-t border-border pt-6">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Follow Us</p>
-                <div className="flex gap-4">
-                  <a href="https://www.linkedin.com/in/dishviz-ar-3768aa3a2" target="_blank" rel="noopener noreferrer"
-                    className="p-2.5 rounded-full border border-foreground/20 text-foreground hover:bg-foreground/10 transition-smooth" aria-label="LinkedIn">
-                    <Linkedin size={18} />
-                  </a>
-                  <a href="https://www.instagram.com/dishviz.ar" target="_blank" rel="noopener noreferrer"
-                    className="p-2.5 rounded-full border border-foreground/20 text-foreground hover:bg-foreground/10 transition-smooth" aria-label="Instagram">
-                    <Instagram size={18} />
-                  </a>
-                  <a href="https://x.com/dishviz_ar" target="_blank" rel="noopener noreferrer"
-                    className="p-2.5 rounded-full border border-foreground/20 text-foreground hover:bg-foreground/10 transition-smooth" aria-label="X (Twitter)">
-                    <Twitter size={18} />
-                  </a>
+            <StaggerContainer className="space-y-6" staggerDelay={0.1}>
+              {[
+                { label: "Email", content: <a href="mailto:dishviz.ar@gmail.com" className="text-foreground hover:text-accent transition-smooth">dishviz.ar@gmail.com</a> },
+                { label: "Phone", content: <p className="text-foreground">+91 98765 xxxxx</p> },
+                { label: "Location", content: <p className="text-foreground">India</p> },
+              ].map((item, i) => (
+                <StaggerItem key={i}>
+                  <RevealLine />
+                  <div className="pt-6">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">{item.label}</p>
+                    {item.content}
+                  </div>
+                </StaggerItem>
+              ))}
+              <StaggerItem>
+                <RevealLine />
+                <div className="pt-6">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">Follow Us</p>
+                  <div className="flex gap-4">
+                    {[
+                      { href: "https://www.linkedin.com/in/dishviz-ar-3768aa3a2", icon: Linkedin, label: "LinkedIn" },
+                      { href: "https://www.instagram.com/dishviz.ar", icon: Instagram, label: "Instagram" },
+                      { href: "https://x.com/dishviz_ar", icon: Twitter, label: "X (Twitter)" },
+                    ].map((social, i) => (
+                      <motion.a
+                        key={i}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 rounded-full border border-foreground/20 text-foreground hover:bg-foreground/10 transition-smooth"
+                        aria-label={social.label}
+                        whileHover={{ scale: 1.15, rotate: 5 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <social.icon size={18} />
+                      </motion.a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
+              </StaggerItem>
+            </StaggerContainer>
           </motion.div>
         </div>
       </div>
