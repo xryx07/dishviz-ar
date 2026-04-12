@@ -7,7 +7,7 @@ export const Hero = () => {
   };
 
   return (
-    <section id="hero" className="relative h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 bg-background overflow-hidden">
+    <section id="hero" className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-20 bg-background overflow-hidden">
       <ParticleBackground />
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto">
