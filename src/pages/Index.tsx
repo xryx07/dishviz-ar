@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/sections/Hero";
 import { HowItWorks } from "@/components/sections/HowItWorks";
@@ -12,27 +13,38 @@ import { FloatingContactButton } from "@/components/FloatingContactButton";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AIChatButton } from "@/components/AIChatButton";
 import { SafariBanner } from "@/components/SafariBanner";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const Index = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 2800);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background">
-      <SafariBanner />
-      <Navigation />
-      <main>
-        <Hero />
-        <HowItWorks />
-        <Benefits />
-        <Pricing />
-        <Demo />
-        <AboutCompany />
-        <About />
-        <Contact />
-      </main>
-      <Footer />
-      <FloatingContactButton />
-      <ScrollToTop />
-      <AIChatButton />
-    </div>
+    <>
+      <LoadingScreen isLoading={isLoading} />
+      <div className="min-h-screen bg-background">
+        <SafariBanner />
+        <Navigation />
+        <main>
+          <Hero />
+          <HowItWorks />
+          <Benefits />
+          <Pricing />
+          <Demo />
+          <AboutCompany />
+          <About />
+          <Contact />
+        </main>
+        <Footer />
+        <FloatingContactButton />
+        <ScrollToTop />
+        <AIChatButton />
+      </div>
+    </>
   );
 };
 
