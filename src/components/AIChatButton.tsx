@@ -271,7 +271,7 @@ export const AIChatButton = () => {
                     <h3 className="font-semibold text-primary-foreground text-lg">DishViz AI</h3>
                     <div className="flex items-center gap-1.5">
                       <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                      <p className="text-xs text-primary-foreground/80">Powered by Gemini 3</p>
+                      <p className="text-xs text-primary-foreground/80">Online</p>
                     </div>
                   </div>
                 </div>
