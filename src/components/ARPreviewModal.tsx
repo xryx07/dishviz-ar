@@ -5,14 +5,33 @@ import { Button } from "@/components/ui/button";
 import { Smartphone, Copy, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
-// Detect in-app browsers that don't support AR
-const isInAppBrowser = () => {
-  const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
-  // Instagram, Facebook, Twitter, LinkedIn, TikTok, Snapchat, WeChat, etc.
-  return /FBAN|FBAV|Instagram|Twitter|LinkedIn|TikTok|Snapchat|MicroMessenger|Line\//i.test(ua);
-};
-
 const isIOSDevice = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isAndroidDevice = () => /Android/i.test(navigator.userAgent);
+
+// Detect in-app browsers that don't support WebXR AR or cause Google App crashes
+const getInAppBrowserType = (): 'ios-inapp' | 'android-google-app' | 'android-inapp' | null => {
+  const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+
+  if (isIOSDevice()) {
+    if (/FBAN|FBAV|Instagram|Twitter|LinkedIn|TikTok|Snapchat|MicroMessenger|Line\/|WhatsApp/i.test(ua)) {
+      return 'ios-inapp';
+    }
+    return null;
+  }
+
+  if (isAndroidDevice()) {
+    // Google Search App webview (triggers the "Google keeps stopping" Scene Viewer crash)
+    if (/GSA\//i.test(ua)) {
+      return 'android-google-app';
+    }
+    // Social / webview on Android
+    if (/; wv\)|Version\/4\.0.*Chrome|FBAN|FBAV|Instagram|Twitter|LinkedIn|TikTok|Snapchat|WhatsApp/i.test(ua)) {
+      return 'android-inapp';
+    }
+  }
+
+  return null;
+};
 
 interface ARPreviewModalProps {
   isOpen: boolean;
@@ -137,24 +156,33 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   const [hasError, setHasError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [arSupported, setArSupported] = useState<boolean | null>(null);
-  const [showInAppWarning, setShowInAppWarning] = useState(false);
+  const [inAppType, setInAppType] = useState<'ios-inapp' | 'android-google-app' | 'android-inapp' | null>(null);
   const modelRef = useRef<HTMLElement>(null);
 
-  // Check for in-app browser on iOS
+  // Check for in-app browsers
   useEffect(() => {
-    if (isOpen && isIOSDevice() && isInAppBrowser()) {
-      setShowInAppWarning(true);
-    } else {
-      setShowInAppWarning(false);
+    if (isOpen) {
+      setInAppType(getInAppBrowserType());
     }
   }, [isOpen]);
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied! Open Safari and paste to view AR.");
+      const isAndroid = isAndroidDevice();
+      toast.success(isAndroid ? "Link copied! Open Chrome and paste to view AR." : "Link copied! Open Safari and paste to view AR.");
     } catch {
       toast.error("Failed to copy link");
+    }
+  };
+
+  const handleOpenChrome = () => {
+    try {
+      const cleanUrl = window.location.href.replace(/^https?:\/\//, '');
+      const chromeIntent = `intent://${cleanUrl}#Intent;scheme=https;package=com.android.chrome;end;`;
+      window.location.href = chromeIntent;
+    } catch {
+      window.open(window.location.href, '_blank');
     }
   };
 
@@ -462,13 +490,53 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
         </div>
         
         <div className="flex flex-col gap-2 pt-3">
-          {showInAppWarning ? (
+          {inAppType === 'android-google-app' || inAppType === 'android-inapp' ? (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 text-center">
+              <p className="text-sm font-semibold text-foreground mb-1">
+                📱 Open in Chrome for AR
+              </p>
+              <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+                {inAppType === 'android-google-app'
+                  ? "You are inside the Google Search app, which can crash ('Google keeps stopping'). Open in Chrome to place this dish on your table in AR."
+                  : "In-app browsers block AR camera access. Open this page in Google Chrome to view in AR."}
+              </p>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleOpenChrome}
+                  className="flex-1 gap-2 bg-primary text-primary-foreground"
+                  size="sm"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open in Chrome
+                </Button>
+                <Button 
+                  onClick={handleCopyLink}
+                  className="flex-1 gap-2"
+                  variant="outline"
+                  size="sm"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy Link
+                </Button>
+              </div>
+              <div className="mt-2 pt-2 border-t border-border/30">
+                <Button
+                  onClick={handleARActivate}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-muted-foreground hover:text-foreground h-7"
+                >
+                  Try AR anyway →
+                </Button>
+              </div>
+            </div>
+          ) : inAppType === 'ios-inapp' ? (
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 text-center">
               <p className="text-sm font-medium text-foreground mb-2">
                 📱 Open in Safari for AR
               </p>
               <p className="text-xs text-muted-foreground mb-3">
-                AR doesn't work in this browser. Copy the link below and open it in Safari to view in AR.
+                AR doesn't work in this in-app browser. Copy the link below and open it in Safari to view in AR.
               </p>
               <div className="flex gap-2">
                 <Button 
@@ -482,7 +550,6 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
                 </Button>
                 <Button 
                   onClick={() => {
-                    // Try to open in Safari (works on some devices)
                     window.open(window.location.href, '_blank');
                   }}
                   className="flex-1 gap-2"
@@ -512,14 +579,21 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
               </Button>
             </div>
           ) : (
-            <Button 
-              onClick={handleARActivate}
-              className="w-full gap-2"
-              size="lg"
-            >
-              <Smartphone className="w-5 h-5" />
-              View in AR
-            </Button>
+            <>
+              <Button 
+                onClick={handleARActivate}
+                className="w-full gap-2"
+                size="lg"
+              >
+                <Smartphone className="w-5 h-5" />
+                View in AR
+              </Button>
+              {isAndroidDevice() && (
+                <p className="text-center text-[11px] text-muted-foreground/80 pt-1">
+                  Tip: If Google shows an error, tap <span className="font-semibold text-foreground">⋮</span> at top right and choose <span className="font-semibold text-foreground">"Open in Chrome"</span>.
+                </p>
+              )}
+            </>
           )}
           <p className="text-center text-xs text-muted-foreground">
             Drag to rotate • Pinch to zoom
