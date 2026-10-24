@@ -6,6 +6,7 @@ import { Eye, Box, Loader2 } from "lucide-react";
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
+import sandwichImage from "@/assets/dish-sandwich.png";
 import { ARPreviewModal, preloadModel, preloadAllModels } from "@/components/ARPreviewModal";
 import { TextRevealHeading, ParallaxImage, StaggerContainer, StaggerItem } from "@/components/TextReveal";
 
@@ -33,6 +34,14 @@ const dishes = [
     image: manchurianImage,
     model: "/models/manchurian_dish.glb",
     poster: manchurianImage,
+  },
+  {
+    name: "Club Sandwich",
+    description: "Grilled triple-decker with cheese, fresh lettuce, tomato & crisps",
+    price: "₹299",
+    image: sandwichImage,
+    model: "/models/sandwich_dish.glb",
+    poster: sandwichImage,
   },
 ];
 
@@ -157,7 +166,7 @@ export const Demo = () => {
         </StaggerContainer>
 
         {/* Desktop grid */}
-        <StaggerContainer className="hidden md:grid md:grid-cols-3 gap-8" staggerDelay={0.15}>
+        <StaggerContainer className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6" staggerDelay={0.15}>
           {dishes.map((dish, index) => (
             <StaggerItem key={index}>
               <motion.div

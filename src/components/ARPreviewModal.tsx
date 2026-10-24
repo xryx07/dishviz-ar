@@ -70,12 +70,22 @@ declare global {
 import kebabImage from "@/assets/dish-kebab.jpg";
 import pastaImage from "@/assets/dish-pasta.jpg";
 import manchurianImage from "@/assets/dish-manchurian.jpg";
+import sandwichImage from "@/assets/dish-sandwich.png";
 
 // Supabase storage URL for USDZ files
 const STORAGE_URL = 'https://boccbckwqkmtmmtsqybv.supabase.co/storage/v1/object/public/models';
 
 const getDishData = (dishName: string) => {
   const name = dishName.toLowerCase();
+
+  // Club Sandwich
+  if (name.includes('sandwich') || name.includes('club')) {
+    return {
+      model: '/models/sandwich_dish.glb',
+      iosModel: `${STORAGE_URL}/sandwich%2Bdish%2B3d%2Bmodel.usdz`,
+      poster: sandwichImage
+    };
+  }
   
   // Pasta dish
   if (name.includes('pasta')) {
@@ -131,6 +141,7 @@ export const preloadAllModels = () => {
     '/models/pasta_dish.glb',
     '/models/manchurian_dish.glb',
     '/models/falafel_dish.glb',
+    '/models/sandwich_dish.glb',
   ];
   models.forEach(m => preloadModel(m));
 };
