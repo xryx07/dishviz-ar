@@ -161,48 +161,37 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
   // Check AR support
   useEffect(() => {
     const checkARSupport = async () => {
-      // Check if on mobile
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      // Check model-viewer element's canActivateAR property if already mounted
+      const element = modelRef.current as any;
+      if (element?.canActivateAR) {
+        setArSupported(true);
+        return;
+      }
+
+      // Check if on mobile device
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
       
       if (!isMobile) {
+        // Desktop / Laptop: check if WebXR device or simulator is active
+        if ('xr' in navigator) {
+          try {
+            const supported = await (navigator as any).xr?.isSessionSupported?.('immersive-ar');
+            if (supported) {
+              setArSupported(true);
+              return;
+            }
+          } catch (e) {
+            // WebXR not available
+          }
+        }
         setArSupported(false);
         return;
       }
 
-      // Check for WebXR support
-      if ('xr' in navigator) {
-        try {
-          const supported = await (navigator as any).xr?.isSessionSupported?.('immersive-ar');
-          if (supported) {
-            setArSupported(true);
-            return;
-          }
-        } catch (e) {
-          // WebXR not available
-        }
-      }
-
-      // Check for iOS AR Quick Look support (Safari on iOS)
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
-      
-      if (isIOS && isSafari) {
-        setArSupported(true);
-        return;
-      }
-
-      // Check for Android Scene Viewer support
-      const isAndroid = /Android/i.test(navigator.userAgent);
-      const isChrome = /Chrome/i.test(navigator.userAgent);
-      
-      if (isAndroid && isChrome) {
-        // Most modern Android Chrome supports Scene Viewer, but not all devices have ARCore
-        // We'll optimistically assume support but the button will gracefully fail
-        setArSupported(true);
-        return;
-      }
-
-      setArSupported(false);
+      // On mobile devices (iOS / Android), default to true because:
+      // - iOS 12+ supports AR Quick Look (.usdz) across all browsers
+      // - Modern Android (Chrome, Samsung Internet, Edge, etc.) supports WebXR and Scene Viewer
+      setArSupported(true);
     };
 
     if (isOpen) {
@@ -223,6 +212,10 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       setIsLoading(false);
       setProgress(100);
       setHasError(false);
+
+      if ((element as any)?.canActivateAR) {
+        setArSupported(true);
+      }
     };
 
     const handleProgress = (event: Event) => {
@@ -240,10 +233,20 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
       setIsLoading(false);
     };
 
+    const handleARStatus = (event: Event) => {
+      const status = (event as CustomEvent).detail?.status;
+      if (status === 'failed') {
+        toast.error("AR session failed to start. Make sure your device AR services are enabled.");
+      } else if (status === 'session-started') {
+        toast.success("AR session started!");
+      }
+    };
+
     if (element) {
       element.addEventListener('load', handleLoad);
       element.addEventListener('progress', handleProgress);
       element.addEventListener('error', handleError);
+      element.addEventListener('ar-status', handleARStatus);
 
       if ((element as any).loaded) {
         handleLoad();
@@ -269,6 +272,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
         element.removeEventListener('load', handleLoad);
         element.removeEventListener('progress', handleProgress);
         element.removeEventListener('error', handleError);
+        element.removeEventListener('ar-status', handleARStatus);
       }
       if (progressInterval) clearInterval(progressInterval);
       if (fallbackTimeout) clearTimeout(fallbackTimeout);
@@ -284,43 +288,57 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
     }
   }, [isOpen, dishName]);
 
-  const handleARActivate = () => {
+  const handleARActivate = async () => {
+    const element = modelRef.current as any;
+
+    // 1. Primary method: Use Google model-viewer's standard activateAR()
+    // This handles WebXR -> Scene Viewer -> iOS Quick Look with built-in device capability negotiation
+    if (element && typeof element.activateAR === 'function') {
+      try {
+        await element.activateAR();
+        return;
+      } catch (err) {
+        console.warn("model-viewer activateAR encountered an issue, trying platform fallback:", err);
+      }
+    }
+
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     const isAndroid = /Android/i.test(navigator.userAgent);
 
-    // Prefer native flows per platform for reliability
-    if (isIOS) {
-      // Always open USDZ directly via AR Quick Look
-      const usdzUrl = dishData.iosModel; // Full URL to storage
-      const anchor = document.createElement("a");
-      anchor.setAttribute("rel", "ar");
-      anchor.setAttribute("href", usdzUrl);
-      const img = document.createElement("img");
-      anchor.appendChild(img);
-      document.body.appendChild(anchor);
-      anchor.click();
-      document.body.removeChild(anchor);
-      return;
-    }
-
-    if (isAndroid) {
-      // Open Scene Viewer directly
-      const modelUrl = `${window.location.origin}${dishData.model}`;
-      const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
-        modelUrl,
-      )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(
-        window.location.href,
-      )};end;`;
-      window.location.href = sceneViewerUrl;
-      return;
-    }
-
-    if (modelRef.current) {
-      const element = modelRef.current as any;
-      if (element.canActivateAR) {
-        element.activateAR();
+    // 2. iOS Fallback: Direct Apple Quick Look (.usdz)
+    if (isIOS && dishData.iosModel) {
+      try {
+        const anchor = document.createElement("a");
+        anchor.setAttribute("rel", "ar");
+        anchor.setAttribute("href", dishData.iosModel);
+        const img = document.createElement("img");
+        anchor.appendChild(img);
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        return;
+      } catch (err) {
+        console.error("iOS Quick Look fallback failed:", err);
       }
     }
+
+    // 3. Android Fallback: Google Scene Viewer with absolute URL
+    if (isAndroid) {
+      try {
+        const fullModelUrl = new URL(dishData.model, window.location.href).href;
+        const sceneViewerUrl = `intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
+          fullModelUrl
+        )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(
+          window.location.href
+        )};end;`;
+        window.location.href = sceneViewerUrl;
+        return;
+      } catch (err) {
+        console.error("Android Scene Viewer fallback failed:", err);
+      }
+    }
+
+    toast.error("AR could not be opened on this device.");
   };
 
   const dishData = getDishData(dishName);
@@ -429,6 +447,7 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
             alt={`3D model of ${dishName}`}
             ar
             ar-modes="webxr scene-viewer quick-look"
+            ar-scale="auto"
             camera-controls
             auto-rotate
             auto-rotate-delay="0"
@@ -477,21 +496,29 @@ export const ARPreviewModal = ({ isOpen, onClose, dishName }: ARPreviewModalProp
           ) : arSupported === false ? (
             <div className="bg-muted/50 rounded-lg p-4 text-center">
               <p className="text-sm font-medium text-foreground mb-1">
-                AR not available on this device
+                AR works best on mobile devices
               </p>
-              <p className="text-xs text-muted-foreground">
-                AR requires a compatible mobile device (iPhone 6s+ with Safari, or Android with Chrome and ARCore support). You can still interact with the 3D model above!
+              <p className="text-xs text-muted-foreground mb-3">
+                To project this 3D dish onto your table in real-world AR, open this site on your smartphone (iPhone with Safari, or Android with Chrome).
               </p>
+              <Button 
+                onClick={handleARActivate}
+                variant="outline"
+                size="sm"
+                className="gap-2 border-foreground/20 text-foreground hover:bg-foreground/10 text-xs"
+              >
+                <Smartphone className="w-4 h-4" />
+                Launch AR Anyway
+              </Button>
             </div>
           ) : (
             <Button 
               onClick={handleARActivate}
               className="w-full gap-2"
               size="lg"
-              disabled={arSupported === null}
             >
               <Smartphone className="w-5 h-5" />
-              {arSupported === null ? 'Checking AR...' : 'View in AR'}
+              View in AR
             </Button>
           )}
           <p className="text-center text-xs text-muted-foreground">
